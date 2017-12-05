@@ -11,9 +11,10 @@ sml::sml(unsigned short port) :
     server_.register_receive_handler(boost::bind(&sml::handle_time_request, this, _1, _2, _3, _4));
 
 }
-int sml::send_message(message &msg, peer &to)
+void sml::send_message(boost::shared_ptr<std::string> message, boost::shared_ptr<peer> to)
 {
-    return 0;
+    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(to->address()), to->port());
+    server_.send_to(message, endpoint);
 }
 
 void sml::handle_time_request(boost::shared_ptr<std::string> message,

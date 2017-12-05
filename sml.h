@@ -11,7 +11,7 @@ class sml
 {
 public:
     sml(unsigned short port);
-    int send_message(message &msg, peer &to);
+    void send_message(boost::shared_ptr<std::string> message, boost::shared_ptr<peer> to);
 private:
     void handle_time_request(boost::shared_ptr<std::string> message,
                              boost::asio::ip::udp::endpoint &remote_endpoint,

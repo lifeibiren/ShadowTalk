@@ -9,8 +9,11 @@ class peer
 {
 public:
     peer();
+    std::string address() const;
+    unsigned int port() const;
+private:
     std::string name_;
-    std::string host_;
+    std::string address_;
     unsigned int port_;
     key pub_key_;
 };
