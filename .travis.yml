@@ -1,0 +1,12 @@
+language: cpp
+compiler: clang
+install: false
+os: linux
+addons:
+    apt:
+        packages:
+        - cmake
+        - libboost-all-dev
+script:
+    - cmake .
+    - make -j
