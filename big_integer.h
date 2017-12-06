@@ -2,12 +2,14 @@
 #define BIG_INTEGER_H
 
 #include <vector>
+#include <string>
 
 class big_integer
 {
 public:
     big_integer();
     big_integer(const big_integer &val);
+    big_integer(const std::string &num, int base);
     big_integer &operator= (big_integer &r_val);
 
     big_integer &operator+ (big_integer &r_val);
@@ -32,8 +34,14 @@ public:
     bool operator> (big_integer &r_val);
     bool operator<= (big_integer &r_val);
     bool operator>= (big_integer &r_val);
+
+    bool is_nagetive() const;
+    bool is_positive() const;
+    int from_string(const std::string &num, int base);
+    std::string to_string(int base) const;
 private:
-    std::vector<unsigned long> val_;
+    int sign_;
+    std::vector<std::uint32_t> val_;
 };
 
 #endif // BIG_INTEGER_H

@@ -7,6 +7,8 @@
 #include <boost/shared_ptr.hpp>
 #include <string>
 
+#include <gmpxx.h>
+
 #include "key.h"
 #include "big_integer.h"
 class rsa

@@ -7,7 +7,7 @@ set(
     common_src sml.cpp udp_server.cpp peer.cpp message.cpp
     key.cpp rsa.cpp big_integer.cpp
     )
-set(common_libs boost_system boost_thread)
+set(common_libs boost_system boost_thread gmpxx gmp)
 add_executable(server "server.cpp" ${common_src})
 target_link_libraries(server ${common_libs})
 
