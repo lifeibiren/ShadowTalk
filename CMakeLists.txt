@@ -9,7 +9,7 @@ set(
     )
 
 add_subdirectory(libcry)
-
+include_directories(libcry)
 
 set(common_libs boost_system boost_thread cry)
 add_executable(server "server.cpp" ${common_src})
