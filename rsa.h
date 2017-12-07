@@ -10,7 +10,7 @@
 #include <gmpxx.h>
 
 #include "key.h"
-#include "big_integer.h"
+#include "integer.h"
 class rsa
 {
 public:

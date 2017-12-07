@@ -5,9 +5,13 @@ project(ShadowTalk)
 add_compile_options(-std=c++11)
 set(
     common_src sml.cpp udp_server.cpp peer.cpp message.cpp
-    key.cpp rsa.cpp big_integer.cpp
+    key.cpp rsa.cpp
     )
-set(common_libs boost_system boost_thread gmpxx gmp)
+
+add_subdirectory(libcry)
+
+
+set(common_libs boost_system boost_thread cry)
 add_executable(server "server.cpp" ${common_src})
 target_link_libraries(server ${common_libs})
 
