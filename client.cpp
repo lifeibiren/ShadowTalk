@@ -29,10 +29,12 @@ int main(int argc, char* argv[])
 
         boost::array<char, 4096> recv_buf;
         udp::endpoint sender_endpoint;
-        size_t len = socket.receive_from(
-                    boost::asio::buffer(recv_buf), sender_endpoint);
 
-        std::cout.write(recv_buf.data(), len);
+        size_t len;
+        while ((len = socket.receive_from(boost::asio::buffer(recv_buf),
+                                          sender_endpoint)) > 0) {
+            std::cout.write(recv_buf.data(), len);
+        }
     }
     catch (std::exception& e)
     {

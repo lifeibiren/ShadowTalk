@@ -7,13 +7,14 @@
 #include "message.h"
 #include "key.h"
 
+namespace shadowtalk {
 class sml
 {
 public:
     sml(unsigned short port);
     void send_message(boost::shared_ptr<std::string> message, boost::shared_ptr<peer> to);
 private:
-    void handle_time_request(boost::shared_ptr<std::string> message,
+    void handle_client_request(boost::shared_ptr<std::string> message,
                              boost::asio::ip::udp::endpoint &remote_endpoint,
                              const boost::system::error_code& error,
                              std::size_t bytes_transferred);
@@ -25,7 +26,8 @@ private:
     std::list<std::shared_ptr<peer>> alive_peers_;
     std::list<std::shared_ptr<peer>> keep_alive_;
     std::list<key> pub_keys_;
-    std::list<std::string> host_list_;
+    std::list<peer> peer_list_;
 };
+}
 
 #endif // SML_H

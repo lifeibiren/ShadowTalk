@@ -23,8 +23,10 @@ int main(int argc, char **args)
 //    {
 //        std::cerr << e.what() << std::endl;
 //    }
-    sml sml_(6666);
+    shadowtalk::sml sml_(6666);
     boost::chrono::seconds period(10);
-    boost::this_thread::sleep_for(period);
+    while(1) {
+        boost::this_thread::sleep_for(period);
+    }
     return 0;
 }
