@@ -45,7 +45,8 @@ void udp_server::handle_receive(const boost::system::error_code& error,
 {
     if (!error || error == boost::asio::error::message_size)
     {
-        boost::shared_ptr<std::string> received_message(new std::string(recv_buffer_.c_array()));
+        boost::shared_ptr<std::string> received_message(
+                    new std::string(recv_buffer_.c_array(), bytes_transferred));
         receive_signal(received_message, remote_endpoint_, error, bytes_transferred);
 
         start_receive();
