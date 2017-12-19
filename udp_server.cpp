@@ -22,12 +22,12 @@ void udp_server::send_to(boost::shared_ptr<std::string> message, const boost::as
                                       boost::asio::placeholders::error,
                                       boost::asio::placeholders::bytes_transferred));
 }
-void udp_server::register_receive_handler(const message_signal::slot_type &slot)
+void udp_server::register_receive_handler(const datagram_signal::slot_type &slot)
 {
     receive_signal.connect(slot);
 }
 
-void udp_server::register_send_handler(const message_signal::slot_type &slot)
+void udp_server::register_send_handler(const datagram_signal::slot_type &slot)
 {
     send_signal.connect(slot);
 }

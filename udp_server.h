@@ -18,11 +18,12 @@ public:
     typedef boost::signals2::signal<void (boost::shared_ptr<std::string> message,
                                           boost::asio::ip::udp::endpoint &remote_endpoint,
                                           const boost::system::error_code& error,
-                                          std::size_t bytes_transferred)> message_signal;
-    typedef message_signal::slot_type message_signal_handler;
+                                          std::size_t bytes_transferred)> datagram_signal;
+    typedef datagram_signal::slot_type message_signal_handler;
 
     udp_server(boost::asio::io_service& io_service, unsigned short port);
-    void send_to(boost::shared_ptr<std::string> message, const boost::asio::ip::udp::endpoint &endpoint);
+    void send_to(boost::shared_ptr<std::string> message,
+                 const boost::asio::ip::udp::endpoint &endpoint);
     void register_receive_handler(const message_signal_handler &slot);
     void register_send_handler(const message_signal_handler &slot);
 private:
@@ -41,9 +42,8 @@ private:
     udp::endpoint remote_endpoint_;
     boost::array<char, buffer_size_> recv_buffer_;
 
-
-    message_signal receive_signal;
-    message_signal send_signal;
+    datagram_signal receive_signal;
+    datagram_signal send_signal;
 };
 
 #endif // UDP_SERVER_H

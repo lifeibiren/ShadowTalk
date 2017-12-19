@@ -6,18 +6,27 @@
 #include "peer.h"
 #include "key.h"
 
+namespace shadowtalk {
 class message
 {
 public:
-    message();
-    message(boost::shared_ptr<std::string> content, boost::shared_ptr<peer> &src, boost::shared_ptr<peer> &dst);
+    void set_content(boost::shared_ptr<std::string> content);
+    void set_dst_peer(boost::shared_ptr<peer> dst_peer);
+    void set_src_peer(boost::shared_ptr<peer> src_peer);
+    boost::shared_ptr<peer> src_peer() const;
+    boost::shared_ptr<peer> dst_peer() const;
 
-    boost::shared_ptr<std::string> to_raw_bytes() const;
+    boost::shared_ptr<std::string> content() const;
 private:
-    boost::shared_ptr<std::string> bytes_, content_;
-    boost::shared_ptr<key> encrypt_, decrypt_;
-    boost::shared_ptr<peer> src_, dst_;
+    friend class sml;
+    message(boost::shared_ptr<peer> src_peer = boost::shared_ptr<peer>(nullptr),
+            boost::shared_ptr<std::string> content = boost::shared_ptr<std::string>(nullptr),
+            boost::shared_ptr<peer> dst_peer = boost::shared_ptr<peer>(nullptr)
+            );
 
+    boost::shared_ptr<std::string> content_;
+    boost::shared_ptr<peer> src_peer_, dst_peer_;
 };
+} //namespace shadowtalk
 
 #endif // MESSAGE_H
