@@ -5,41 +5,36 @@
 
 using boost::asio::ip::udp;
 
-int main(int argc, char* argv[])
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <list>
+#include <boost/array.hpp>
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/asio.hpp>
+
+#include "udp_server.h"
+#include "sml.h"
+#include "message.h"
+#include "peer.h"
+void handle_received_message(boost::shared_ptr<shadowtalk::message> msg)
 {
-    try
-    {
-        if (argc != 2)
-        {
-            std::cerr << "Usage: client <host>" << std::endl;
-            return 1;
-        }
-
-        boost::asio::io_service io_service;
-
-        udp::resolver resolver(io_service);
-        udp::resolver::query query(udp::v4(), argv[1], "6666");
-        udp::endpoint receiver_endpoint = *resolver.resolve(query);
-
-        udp::socket socket(io_service);
-        socket.open(udp::v4());
-
-        boost::array<char, 1> send_buf  = {{ 0 }};
-        socket.send_to(boost::asio::buffer(send_buf), receiver_endpoint);
-
-        boost::array<char, 4096> recv_buf;
-        udp::endpoint sender_endpoint;
-
-        size_t len;
-        while ((len = socket.receive_from(boost::asio::buffer(recv_buf),
-                                          sender_endpoint)) > 0) {
-            std::cout.write(recv_buf.data(), len);
-        }
+    std::cout<<*(msg->content())<<std::endl;
+}
+int main(int argc, char **args)
+{
+    shadowtalk::sml sml_(6665);
+    sml_.register_receive_handler(handle_received_message);
+    boost::chrono::seconds period(1);
+    while(1) {
+        boost::shared_ptr<shadowtalk::message> new_msg = sml_.prepare_empty_message();
+        boost::shared_ptr<std::string> content(new std::string("Hello world"));
+        new_msg->set_content(content);
+        boost::shared_ptr<shadowtalk::peer> dst_peer(new shadowtalk::peer("127.0.0.1", 6666));
+        new_msg->set_dst_peer(dst_peer);
+        sml_.send_message(new_msg);
+        boost::this_thread::sleep_for(period);
     }
-    catch (std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-
     return 0;
 }

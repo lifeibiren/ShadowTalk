@@ -11,7 +11,7 @@ peer::peer(const std::string &address,  unsigned int port) :
     address_ = address;
     port_ = port;
 }
-std::string peer::address() const
+const std::string &peer::address() const
 {
     return address_;
 }

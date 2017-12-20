@@ -1,6 +1,7 @@
 #ifndef SML_H
 #define SML_H
 
+#include <set>
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/signals2.hpp>
@@ -24,16 +25,12 @@ public:
     void send_message(boost::shared_ptr<message> msg);
     void register_receive_handler(const message_signal_handler &slot);
     void register_send_handler(const message_signal_handler &slot);
+    const std::set<boost::shared_ptr<peer>> &live_peers();
 
     boost::shared_ptr<message> prepare_empty_message() const;
 private:
     message_signal receive_signal;
     message_signal send_signal;
-
-    boost::shared_ptr<message> prepare_for_handler(boost::shared_ptr<std::string> bytes,
-                                                   boost::asio::ip::udp::endpoint &remote_endpoint,
-                                                   const boost::system::error_code& error,
-                                                   std::size_t bytes_transferred);
 
     void send_handler(boost::shared_ptr<std::string> bytes,
                       boost::asio::ip::udp::endpoint &remote_endpoint,
@@ -66,9 +63,11 @@ private:
     > peer_endpoint_bm_type;
     peer_endpoint_bm_type peer_endpoint_bm_;
 
-    std::map<boost::shared_ptr<std::string>, boost::shared_ptr<message>> to_be_sent;
+    typedef std::map<boost::shared_ptr<std::string>, boost::shared_ptr<message>> to_be_sent_map_type;
+    to_be_sent_map_type to_be_sent;
 
-    std::list<boost::shared_ptr<peer>> alive_peers_;
+    std::set<boost::shared_ptr<peer>> live_peers_;
+
     std::list<boost::shared_ptr<peer>> keep_alive_;
     std::list<key> pub_keys_;
 };

@@ -11,7 +11,7 @@ class peer
 public:
     peer();
     peer(const std::string &address, unsigned int port);
-    std::string address() const;
+    const std::string &address() const;
     unsigned int port() const;
     bool dead() const;
     std::string to_string() const;
