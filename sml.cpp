@@ -11,12 +11,12 @@ sml::sml(unsigned short port) :
                                               &io_service_,
                                               thread_err_)))
 {
-    server_.register_receive_handler(boost::bind(&sml::receive_handler, this, _1, _2, _3, _4));
-    server_.register_send_handler(boost::bind(&sml::send_handler, this, _1, _2, _3, _4));
+    server_.register_receive_handler(boost::bind(&sml::receive_handler, this, _1, _2, _3));
+    server_.register_send_handler(boost::bind(&sml::send_handler, this, _1, _2, _3));
 }
 void sml::send_message(boost::shared_ptr<message> msg)
 {
-    to_be_sent.insert(to_be_sent_map_type::value_type(msg->content(),msg));
+    to_be_sent_.insert(to_be_sent_map_type::value_type(msg->content(),msg));
 
     peer_endpoint_bm_type::right_map::const_iterator it;
     if ((it = peer_endpoint_bm_.right.find(msg->dst_peer())) == peer_endpoint_bm_.right.end()) {
@@ -32,20 +32,19 @@ void sml::send_message(boost::shared_ptr<message> msg)
 }
 void sml::register_receive_handler(const message_signal_handler &slot)
 {
-    receive_signal.connect(slot);
+    receive_signal_.connect(slot);
 }
 void sml::register_send_handler(const message_signal_handler &slot)
 {
-    send_signal.connect(slot);
+    send_signal_.connect(slot);
 }
 boost::shared_ptr<message> sml::prepare_empty_message() const
 {
-    return boost::shared_ptr<message>(new message(self));
+    return boost::shared_ptr<message>(new message(self_));
 }
 void sml::receive_handler(boost::shared_ptr<std::string> bytes,
                               boost::asio::ip::udp::endpoint &remote_endpoint,
-                              const boost::system::error_code& error,
-                              std::size_t bytes_transferred)
+                              const boost::system::error_code& error)
 {
     boost::shared_ptr<message> msg = prepare_empty_message();
     msg->set_content(bytes);
@@ -59,18 +58,17 @@ void sml::receive_handler(boost::shared_ptr<std::string> bytes,
     } else {
         msg->set_src_peer(it->second);
     }
-    receive_signal(msg);
+    receive_signal_(msg);
 }
 void sml::send_handler(boost::shared_ptr<std::string> bytes,
                               boost::asio::ip::udp::endpoint &remote_endpoint,
-                              const boost::system::error_code& error,
-                              std::size_t bytes_transferred)
+                              const boost::system::error_code& error)
 {
-    to_be_sent_map_type::iterator it = to_be_sent.find(bytes);
-    if (it != to_be_sent.end()) {
-        send_signal(it->second);
-        to_be_sent.erase(it);
-        std::cout<<"deleted with "<<to_be_sent.size()<<" left"<<std::endl;
+    to_be_sent_map_type::iterator it = to_be_sent_.find(bytes);
+    if (it != to_be_sent_.end()) {
+        send_signal_(it->second);
+        to_be_sent_.erase(it);
+        std::cout<<"deleted with "<<to_be_sent_.size()<<" left"<<std::endl;
         std::cout.flush();
     } else {
         throw exception<std::string>(std::string("unknown message triggered send_handler"));

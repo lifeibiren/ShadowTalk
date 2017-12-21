@@ -28,25 +28,23 @@ public:
     const std::set<boost::shared_ptr<peer>> &live_peers();
 
     boost::shared_ptr<message> prepare_empty_message() const;
-private:
-    void send_handler(boost::shared_ptr<std::string> bytes,
-                      boost::asio::ip::udp::endpoint &remote_endpoint,
-                      const boost::system::error_code& error,
-                      std::size_t bytes_transferred);
-    void receive_handler(boost::shared_ptr<std::string> bytes,
-                         boost::asio::ip::udp::endpoint &remote_endpoint,
-                         const boost::system::error_code& error,
-                         std::size_t bytes_transferred);
 
     void handshake(boost::shared_ptr<peer> target);
     void shutdown(boost::shared_ptr<peer> target);
+private:
+    void send_handler(boost::shared_ptr<std::string> bytes,
+                      boost::asio::ip::udp::endpoint &remote_endpoint,
+                      const boost::system::error_code& error);
+    void receive_handler(boost::shared_ptr<std::string> bytes,
+                         boost::asio::ip::udp::endpoint &remote_endpoint,
+                         const boost::system::error_code& error);
 
     boost::asio::io_service io_service_;
     udp_server server_;
     boost::system::error_code thread_err_;
     boost::shared_ptr<boost::thread> thread_ptr_;
 
-    boost::shared_ptr<peer> self;
+    boost::shared_ptr<peer> self_;
 
     template<class Rel>
     struct peer_comp
@@ -64,15 +62,14 @@ private:
     peer_endpoint_bm_type peer_endpoint_bm_;
 
     typedef std::map<boost::shared_ptr<std::string>, boost::shared_ptr<message>> to_be_sent_map_type;
-    to_be_sent_map_type to_be_sent;
+    to_be_sent_map_type to_be_sent_;
 
     std::set<boost::shared_ptr<peer>> live_peers_;
 
-    std::list<boost::shared_ptr<peer>> keep_alive_;
-    std::list<key> pub_keys_;
+    std::list<boost::shared_ptr<peer>> peer_list_;
 
-    message_signal receive_signal;
-    message_signal send_signal;
+    message_signal receive_signal_;
+    message_signal send_signal_;
 };
 } //namespace shadowtalk
 

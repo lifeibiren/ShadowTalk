@@ -19,17 +19,16 @@ void udp_server::send_to(boost::shared_ptr<std::string> message, const boost::as
 {
     socket_.async_send_to(boost::asio::buffer(*message), endpoint,
                           boost::bind(&udp_server::handle_send, this, message,
-                                      boost::asio::placeholders::error,
-                                      boost::asio::placeholders::bytes_transferred));
+                                      boost::asio::placeholders::error));
 }
 void udp_server::register_receive_handler(const datagram_signal::slot_type &slot)
 {
-    receive_signal.connect(slot);
+    receive_signal_.connect(slot);
 }
 
 void udp_server::register_send_handler(const datagram_signal::slot_type &slot)
 {
-    send_signal.connect(slot);
+    send_signal_.connect(slot);
 }
 
 void udp_server::start_receive()
@@ -47,14 +46,13 @@ void udp_server::handle_receive(const boost::system::error_code& error,
     {
         boost::shared_ptr<std::string> received_message(
                     new std::string(recv_buffer_.c_array(), bytes_transferred));
-        receive_signal(received_message, remote_endpoint_, error, bytes_transferred);
+        receive_signal_(received_message, remote_endpoint_, error);
 
         start_receive();
     }
 }
 void udp_server::handle_send(boost::shared_ptr<std::string> message,
-                 const boost::system::error_code& error,
-                 std::size_t bytes_transferred)
+                 const boost::system::error_code& error)
 {
-    send_signal(message, remote_endpoint_, error, bytes_transferred);
+    send_signal_(message, remote_endpoint_, error);
 }

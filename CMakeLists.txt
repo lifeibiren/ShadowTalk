@@ -5,6 +5,7 @@ project(ShadowTalk)
 add_compile_options(-std=c++11)
 set(
     common_src sml.cpp udp_server.cpp peer.cpp message.cpp
+    message_piece.cpp peer_context.cpp
     )
 add_library(sml OBJECT ${common_src})
 add_subdirectory(libcry)
