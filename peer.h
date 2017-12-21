@@ -26,8 +26,11 @@ private:
     std::string name_;
     std::string address_;
     unsigned int port_;
-    key pub_key_;
+    key key_;
     time_t last_beat_;
+    enum peer_state {
+        unshake_hand
+    }state;
 };
 } //namespace shadowtalk
 

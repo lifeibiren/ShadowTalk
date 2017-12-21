@@ -29,9 +29,6 @@ public:
 
     boost::shared_ptr<message> prepare_empty_message() const;
 private:
-    message_signal receive_signal;
-    message_signal send_signal;
-
     void send_handler(boost::shared_ptr<std::string> bytes,
                       boost::asio::ip::udp::endpoint &remote_endpoint,
                       const boost::system::error_code& error,
@@ -40,6 +37,9 @@ private:
                          boost::asio::ip::udp::endpoint &remote_endpoint,
                          const boost::system::error_code& error,
                          std::size_t bytes_transferred);
+
+    void handshake(boost::shared_ptr<peer> target);
+    void shutdown(boost::shared_ptr<peer> target);
 
     boost::asio::io_service io_service_;
     udp_server server_;
@@ -70,6 +70,9 @@ private:
 
     std::list<boost::shared_ptr<peer>> keep_alive_;
     std::list<key> pub_keys_;
+
+    message_signal receive_signal;
+    message_signal send_signal;
 };
 } //namespace shadowtalk
 
