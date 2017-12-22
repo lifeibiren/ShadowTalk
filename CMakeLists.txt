@@ -4,14 +4,16 @@ project(ShadowTalk)
 
 add_compile_options(-std=c++11)
 set(
-    common_src sml.cpp udp_server.cpp peer.cpp message.cpp
+    common_src sml.cpp peer.cpp message.cpp
     message_piece.cpp peer_context.cpp
     )
 add_library(sml OBJECT ${common_src})
 add_subdirectory(libcry)
+add_subdirectory(libdtls)
 include_directories(libcry)
+include_directories(libdtls)
 
-set(common_libs boost_system boost_thread pthread cry)
+set(common_libs dtls cry boost_system boost_thread pthread)
 add_executable(server $<TARGET_OBJECTS:sml> "server.cpp")
 target_link_libraries(server ${common_libs})
 
