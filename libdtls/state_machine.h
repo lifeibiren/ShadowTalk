@@ -7,10 +7,10 @@
 #include <string>
 #include "record.h"
 
-class dtls_state_machine
+class state_machine
 {
 public:
-    dtls_state_machine();
+    state_machine();
     void feed(boost::shared_ptr<std::string> bytes);
 
 private:
