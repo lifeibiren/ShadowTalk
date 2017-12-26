@@ -4,9 +4,16 @@
 
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include <stdint.h>
+#include <uint48_t.h>
 class record
 {
 public:
+    record();
+    record(boost::shared_ptr<std::string> bytes); //big endian
+    void from_bytes(boost::shared_ptr<std::string> bytes); //big endian
+    boost::shared_ptr<std::string> to_bytes() const; //big endian
+private:
     typedef enum {
         change_cipher_spec = 20,
         alert = 21,
@@ -22,35 +29,28 @@ public:
     typedef struct {
         content_type type;
         protocol_version_type version;
-        std::uint16_t epoch;
-        std::uint16_t sequence_number[3];
-        std::uint16_t length;
-    } dtls_plaintext_header_type;
+        uint16_t epoch;
+        uint48_t sequence_number;
+        uint16_t length;
+    } __attribute__((packed)) plaintext_header_type;
 
     typedef struct {
         content_type type;
         protocol_version_type version;
-        std::uint16_t epoch;
-        std::uint16_t sequence_number[3];
-        std::uint16_t length;
-    } dtls_compressed_header_type;
+        uint16_t epoch;
+        uint48_t sequence_number;
+        uint16_t length;
+    } compressed_header_type;
 
     typedef struct {
         content_type type;
         protocol_version_type version;
-        std::uint16_t epoch;
-        std::uint16_t sequence_number[3];
-        std::uint16_t length;
-    } dtls_ciphertext_header_type;
+        uint16_t epoch;
+        uint48_t sequence_number;
+        uint16_t length;
+    } ciphertext_header_type;
 
-    record();
-    record(boost::shared_ptr<std::string> bytes); //big endian
-    void from_bytes(boost::shared_ptr<std::string> bytes); //big endian
-    boost::shared_ptr<std::string> to_bytes() const; //big endian
-private:
-    const protocol_version_type version_ = {3, 3}; /* TLS v1.2 */
-    dtls_plaintext_header_type dtls_plaintext_header_;
-    std::string fragment_;
+    const protocol_version_type version_ = {254, 255}; /* DTLS v1.2 */
 };
 
 #endif // RECORD_LAYER_H

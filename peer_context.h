@@ -14,7 +14,7 @@ public:
     peer_context();
     void receive_handler(boost::shared_ptr<std::string> bytes);
     bool is_finished() const;
-    boost::shared_ptr<message> message() const;
+    boost::shared_ptr<message> get_message() const;
 private:
     typedef enum peer_state {
         FINISHED,

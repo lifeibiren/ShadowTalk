@@ -4,11 +4,12 @@ project(ShadowTalk)
 
 add_compile_options(-std=c++11)
 
-add_subdirectory(libcry)
-add_subdirectory(libdtls)
+
 include_directories(libcry)
 include_directories(libdtls)
-
+include_directories(.)
+add_subdirectory(libcry)
+add_subdirectory(libdtls)
 set(
     common_src sml.cpp peer.cpp message.cpp
     message_piece.cpp peer_context.cpp
