@@ -4,8 +4,9 @@
 
 #include <string>
 #include <boost/shared_ptr.hpp>
-#include <stdint.h>
+#include <cstdint>
 #include <uint48_t.h>
+using std::int16_t;
 class record
 {
 public:
@@ -13,7 +14,10 @@ public:
     record(boost::shared_ptr<std::string> bytes); //big endian
     void from_bytes(boost::shared_ptr<std::string> bytes); //big endian
     boost::shared_ptr<std::string> to_bytes() const; //big endian
+
 private:
+
+
     typedef enum {
         change_cipher_spec = 20,
         alert = 21,
@@ -30,27 +34,19 @@ private:
         content_type type;
         protocol_version_type version;
         uint16_t epoch;
-        uint48_t sequence_number;
+        uint16_t sequence_number[3];
         uint16_t length;
-    } __attribute__((packed)) plaintext_header_type;
+    } __attribute__((packed)) header_type;
 
-    typedef struct {
-        content_type type;
-        protocol_version_type version;
-        uint16_t epoch;
-        uint48_t sequence_number;
-        uint16_t length;
-    } compressed_header_type;
-
-    typedef struct {
-        content_type type;
-        protocol_version_type version;
-        uint16_t epoch;
-        uint48_t sequence_number;
-        uint16_t length;
-    } ciphertext_header_type;
-
+    content_type type_;
     const protocol_version_type version_ = {254, 255}; /* DTLS v1.2 */
+    uint16_t epoch_;
+    uint48_t sequence_number_;
+    uint16_t length_;
+    boost::shared_ptr<std::string> fragment_;
+
+    boost::shared_ptr<std::string> bytes_;
+    header_type header_;
 };
 
 #endif // RECORD_LAYER_H
