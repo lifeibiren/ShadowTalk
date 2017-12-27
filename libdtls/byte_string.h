@@ -6,11 +6,11 @@
 class byte_string
 {
 public:
-    byte_string();
+    byte_string() : buf_(NULL), data_len_(0), buf_size_(0) {}
     byte_string(std::size_t init_buf_size);
     byte_string(std::string &val);
     byte_string(const byte_string &val);
-    byte_string(const char *buf, std::size_t len);
+    byte_string(const char *buf_, std::size_t len);
     byte_string sub_byte_string(std::size_t start, std::size_t len);
     virtual ~byte_string();
 
@@ -26,13 +26,12 @@ public:
     bool operator <=(const byte_string &val);
     bool operator >=(const byte_string &val);
 
-    void change_endian();
-    byte_string clone_and_change_endian();
-
+    void switch_endian();
 private:
-    char *buf;
-    std::size_t data_len;
-    std::size_t buf_size;
+    void adjust_buf(std::size_t size);
+    char *buf_;
+    std::size_t data_len_;
+    std::size_t buf_size_;
 };
 
 #endif // BYTE_STRING_H

@@ -5,7 +5,9 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <cstdint>
-#include <uint48_t.h>
+#include "uint48_t.h"
+#include "byte_string.h"
+
 using std::int16_t;
 class record
 {
@@ -16,8 +18,6 @@ public:
     boost::shared_ptr<std::string> to_bytes() const; //big endian
 
 private:
-
-
     typedef enum {
         change_cipher_spec = 20,
         alert = 21,
@@ -45,7 +45,7 @@ private:
     uint16_t length_;
     boost::shared_ptr<std::string> fragment_;
 
-    boost::shared_ptr<std::string> bytes_;
+    boost::shared_ptr<byte_string> bytes_;
     header_type header_;
 };
 
