@@ -17,7 +17,7 @@ set(
 add_library(sml OBJECT ${common_src})
 
 
-set(common_libs dtls cry boost_system boost_thread pthread)
+set(common_libs dtls cry boost_system boost_thread dl pthread)
 add_executable(server $<TARGET_OBJECTS:sml> "server.cpp")
 target_link_libraries(server ${common_libs})
 

@@ -7,6 +7,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
+#include "dtls.h"
 
 using boost::asio::ip::udp;
 

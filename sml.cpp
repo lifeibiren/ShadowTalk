@@ -71,7 +71,7 @@ void sml::send_handler(boost::shared_ptr<std::string> bytes,
         std::cout<<"deleted with "<<to_be_sent_.size()<<" left"<<std::endl;
         std::cout.flush();
     } else {
-        throw exception<std::string>(std::string("unknown message triggered send_handler"));
+        throw unknown_error();
     }
 }
 const std::set<boost::shared_ptr<peer>> &sml::live_peers()

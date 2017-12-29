@@ -2,25 +2,33 @@
 #define EXCEPTION_H
 
 #include <iostream>
+#include <exception>
+#include <boost/exception/all.hpp>
 
-namespace shadowtalk {
-template <typename T>
-class exception {
+#include "dtls.h"
+#if BOOST_VERSION >= 106500
+#include <boost/stacktrace.hpp>
+#endif
+
+class exception_base :
+        virtual std::exception, virtual boost::exception
+{
 public:
-    exception() {}
-    exception(T t) : t_(t)
-    {
-        std::cerr<<t_<<std::endl;
+    exception_base() {
+        #if BOOST_VERSION >= 106500
+        std::cerr << boost::stacktrace::stacktrace();
+        std::cerr.flush();
+        #endif
     }
-    virtual ~exception() {}
-    friend exception<T> &operator<<(exception<T> &e, const T &t)
-    {
-        e.t_ = t;
-        return e;
-    }
-private:
-    T t_;
 };
-} //namespace shadowtalk
+
+struct mem_error : virtual exception_base { };
+struct access_violation : virtual mem_error { };
+
+struct io_error : virtual exception_base { };
+struct file_read_error : virtual io_error { };
+
+struct unknown_error : virtual exception_base { };
+
 
 #endif // EXCEPTION_H

@@ -1,20 +1,23 @@
 #ifndef UINT48_T_H
 #define UINT48_T_H
 
-#include <stdint.h>
+#include <cinttypes>
 
-class uint48_t
+class __attribute__((packed)) uint48_t
 {
 public:
     uint48_t();
-    uint48_t(uint8_t *bytes);
-    uint48_t(uint64_t val);
+    uint48_t(std::uint8_t *bytes);
+    uint48_t(std::uint64_t val);
     uint48_t(const uint48_t &val);
     uint48_t &operator=(const uint48_t &val);
-    uint48_t &operator=(const uint64_t val);
-    uint64_t value() const;
+    uint48_t &operator=(std::uint64_t val);
+    std::uint64_t to_uint64() const;
+
+    uint48_t operator +(uint64_t val);
+    uint48_t operator -(uint64_t val);
 private:
-    uint16_t bytes_[3];
+    std::uint16_t bytes_[3];
 };
 
 #endif // UINT48_T_H

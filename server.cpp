@@ -9,7 +9,7 @@
 
 #include "udp_server.h"
 #include "sml.h"
-
+#include "exception.h"
 shadowtalk::sml sml_(6666);
 void handle_client_request(boost::shared_ptr<shadowtalk::message> msg)
 {
@@ -33,6 +33,7 @@ int main(int argc, char **args)
     while(1) {
         boost::this_thread::sleep_for(period);
     }
+
     return 0;
 }
 
