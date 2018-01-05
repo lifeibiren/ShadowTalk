@@ -11,7 +11,7 @@
 #endif
 
 class exception_base :
-        virtual std::exception, virtual boost::exception
+        public virtual std::exception, public virtual boost::exception
 {
 public:
     exception_base() {
@@ -20,15 +20,16 @@ public:
         std::cerr.flush();
         #endif
     }
+    virtual ~exception_base() {}
 };
 
-struct mem_error : virtual exception_base { };
-struct access_violation : virtual mem_error { };
+struct mem_error : exception_base { };
+struct access_violation : mem_error { };
 
-struct io_error : virtual exception_base { };
-struct file_read_error : virtual io_error { };
+struct io_error : exception_base { };
+struct file_read_error : io_error { };
 
-struct unknown_error : virtual exception_base { };
+struct unknown_error : exception_base { };
 
 
 #endif // EXCEPTION_H
