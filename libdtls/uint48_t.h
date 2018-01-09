@@ -12,7 +12,7 @@ public:
     uint48_t(const uint48_t &val);
     uint48_t &operator=(const uint48_t &val);
     uint48_t &operator=(std::uint64_t val);
-    std::uint64_t to_uint64() const;
+    std::uint64_t value() const;
 
     uint48_t operator +(uint64_t val);
     uint48_t operator -(uint64_t val);

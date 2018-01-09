@@ -1,7 +1,8 @@
-#include "byte_string.h"
-#include <string.h>
+#include <boost/endian/buffers.hpp>
+
 #include "exception.h"
 #include "compare.h"
+#include "byte_string.h"
 
 byte_string::byte_string(int init_buf_size) :
     byte_string()
@@ -19,7 +20,7 @@ byte_string::byte_string(const byte_string &val) :
     data_len_ = val.data_len_;
     memcpy(buf_, val.buf_, data_len_);
 }
-byte_string::byte_string(const char *buf, int len) :
+byte_string::byte_string(const void *buf, int len) :
     byte_string(len)
 {
     data_len_ = len;
@@ -41,37 +42,48 @@ byte_string byte_string::sub_byte_string(int start, int len)
 {
     return byte_string(buf_ + start, len);
 }
-void byte_string::push_back(void *buf, int n, bool switch_endian)
+void byte_string::write_at(void *buf, int n, int off)
 {
     assert(buf != NULL || n == 0);
-    gurantee_empty_space(n);
-    memcpy(buf_, buf, n);
-    if (switch_endian) {
-        change_endian(buf_ + data_len_, n);
-    }
-    data_len_ += n;
+    gurantee_space(off + n);
+    memcpy(buf_ + off, buf, n);
+    if (off + n > data_len_)
+        data_len_ = off + n;
 }
-void byte_string::push_back(const byte_string &val, bool switch_endian)
+void byte_string::read_at(void *buf, int n, int off)
 {
-    push_back(val.buf_, val.data_len_, switch_endian);
+    assert((buf != NULL || n == 0) && off + n <= data_len_);
+    memcpy(buf_ + off, buf, n);
 }
-void byte_string::pop_back(void *buf, int n, bool switch_endian)
+void byte_string::write(void *buf, int n)
+{
+    write_at(buf, n, offset_);
+    offset_ += n;
+}
+void byte_string::read(void *buf, int n)
+{
+    read_at(buf, n, offset_);
+    offset_ += n;
+}
+void byte_string::push_back(void *buf, int n)
+{
+    write_at(buf, n, data_len_);
+}
+void byte_string::push_back(const byte_string &val)
+{
+    push_back(val.buf_, val.data_len_);
+}
+void byte_string::pop_back(void *buf, int n)
 {
     if (buf != NULL) {
-        if (switch_endian) {
-            change_endian(buf_ + data_len_ - n, n);
-        }
         memcpy(buf, buf_ + data_len_ - n, n);
     }
     data_len_ -= n;
 }
-void byte_string::extract(void *buf, int start, int length, bool switch_endian)
+void byte_string::extract(void *buf, int start, int length)
 {
     assert(start >= 0 && length >=0 && start + length < data_len_);
     memcpy(buf, buf_ + start, length);
-    if (switch_endian) {
-        change_endian((char *)buf, length);
-    }
 }
 char &byte_string::operator [](int index)
 {
@@ -129,15 +141,6 @@ byte_string &byte_string::operator +(const byte_string &val)
     push_back(val);
     return *this;
 }
-void byte_string::change_endian(char *buf, int len)
-{
-    char tmp;
-    for (int i = 0, j = len - 1; i < j; i ++, j --) {
-        tmp = buf[i];
-        buf[i] = buf[j];
-        buf[j] = tmp;
-    }
-}
 void byte_string::change_buffer_size_to(int size)
 {
     assert(size >= 0);
@@ -158,9 +161,9 @@ void byte_string::adjust_buffer_size(int need)
     while ((dst <<= 1) < need);
     change_buffer_size_to(dst);
 }
-void byte_string::gurantee_empty_space(int size)
+void byte_string::gurantee_space(int size)
 {
-    if (data_len_ + size > buf_size_) {
+    if (size > buf_size_) {
         adjust_buffer_size(size);
     }
 }
