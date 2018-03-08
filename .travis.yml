@@ -2,11 +2,15 @@ language: cpp
 compiler: gcc
 install: false
 os: linux
-addons:
-    apt:
-        packages:
-        - cmake
-        - libboost-all-dev
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker pull ubuntu 
+    #- docker run -it ubuntu:16.04 /bin/bash
+    #- docker run ubuntu:16.04 apt install -y build-essential libboost-dev
 script:
-    - cmake .
-    - make -j
+    - docker run ubuntu:16.04 /bin/bash -c "apt update; apt install -y gcc g++ libboost-all-dev libgmp-dev make cmake git; git clone https://github.com/lifeibiren/Whisper; cd Whisper; cmake .; make -j"
+    #- cmake .
+    #- make -j

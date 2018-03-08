@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/lifeibiren/ShadowTalk.svg?branch=master)](https://travis-ci.org/lifeibiren/ShadowTalk)
+[![Build Status](https://travis-ci.org/lifeibiren/Whisper.svg?branch=master)](https://travis-ci.org/lifeibiren/Whisper)
 
-# ShadowTalk
+# Whisper
 Secure and Robust Chat Tool.

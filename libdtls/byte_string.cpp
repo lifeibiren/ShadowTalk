@@ -1,4 +1,4 @@
-#include <boost/endian/buffers.hpp>
+#include <boost/endian/endian.hpp>
 
 #include "exception.h"
 #include "compare.h"
@@ -121,7 +121,7 @@ bool byte_string::operator !=(const byte_string &val) const
 }
 bool byte_string::operator <(const byte_string &val) const
 {
-    int min = compare::min(data_len_, val.data_len_);
+    int min = utils::min(data_len_, val.data_len_);
     return memcmp(buf_, val.buf_, min) < 0;
 }
 bool byte_string::operator >(const byte_string &val) const
@@ -149,7 +149,7 @@ void byte_string::change_buffer_size_to(int size)
     }
     size = ((size - 1) & ~(ALIGNED_SIZE - 1)) + ALIGNED_SIZE;
     char *new_buf = new char[size];
-    int min_size = compare::min(size, data_len_);
+    int min_size = utils::min(size, data_len_);
     memcpy(new_buf, buf_, min_size);
     delete buf_;
     buf_ = new_buf;

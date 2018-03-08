@@ -3,7 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/endian/buffers.hpp>
+#include <boost/endian/endian.hpp>
 #include <cstdint>
 #include <string>
 

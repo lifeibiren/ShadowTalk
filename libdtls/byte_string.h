@@ -3,7 +3,8 @@
 
 #include <cinttypes>
 #include <string>
-#include <boost/endian/buffers.hpp>
+#include <boost/endian/endian.hpp>
+
 /**
  * @brief The byte_string class is used to handle network endian byte strings.
  * Internal representations in the class should all be in big endian

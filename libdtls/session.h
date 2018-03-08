@@ -2,10 +2,10 @@
 #define CONNECTION_STATE_H
 
 #include <cstdint>
-class connection_state
+class session
 {
 public:
-    connection_state();
+    session();
 
 private:
 

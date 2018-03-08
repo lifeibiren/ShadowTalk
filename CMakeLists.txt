@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(ShadowTalk)
+project(Whisper)
 
 add_compile_options(-std=c++11)
-
+add_definitions(-DBOOST_ENDIAN_DEPRECATED_NAMES)
 
 include_directories(libcry)
 include_directories(libdtls)
