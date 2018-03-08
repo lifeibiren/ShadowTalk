@@ -1,6 +1,6 @@
 #include "peer_context.h"
 
-namespace shadowtalk {
+namespace whisper {
 peer_context::peer_context()
 {
 

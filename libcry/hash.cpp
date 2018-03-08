@@ -1,6 +1,6 @@
 #include "hash.h"
 
-namespace shadowtalk {
+namespace whisper {
 hash::hash()
 {
 

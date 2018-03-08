@@ -1,6 +1,6 @@
 #include "message.h"
 
-namespace shadowtalk {
+namespace whisper {
 message::message(boost::shared_ptr<peer> src_peer,
                  boost::shared_ptr<std::string> content,
                  boost::shared_ptr<peer> dst_peer

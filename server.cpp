@@ -10,14 +10,14 @@
 #include "udp_server.h"
 #include "sml.h"
 #include "exception.h"
-shadowtalk::sml sml_(6666);
-void handle_client_request(boost::shared_ptr<shadowtalk::message> msg)
+whisper::sml sml_(6666);
+void handle_client_request(boost::shared_ptr<whisper::message> msg)
 {
     for (auto it = sml_.live_peers().begin();
          it != sml_.live_peers().end();
          ++it) {
         boost::shared_ptr<std::string> new_message(new std::string((*it)->to_string()));
-        boost::shared_ptr<shadowtalk::message> new_msg = sml_.prepare_empty_message();
+        boost::shared_ptr<whisper::message> new_msg = sml_.prepare_empty_message();
         new_msg->set_content(new_message);
         new_msg->set_dst_peer(msg->src_peer());
         sml_.send_message(new_msg);

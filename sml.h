@@ -14,7 +14,7 @@
  * Secure Message Layer
  */
 
-namespace shadowtalk {
+namespace whisper {
 class sml
 {
 public:

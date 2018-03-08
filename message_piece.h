@@ -4,7 +4,7 @@
 #include <string>
 #include "hash.h"
 
-namespace shadowtalk {
+namespace whisper {
 class message_piece
 {
 public:

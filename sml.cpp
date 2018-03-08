@@ -4,7 +4,7 @@
 #include <printf.h>
 #include "exception.h"
 
-namespace shadowtalk {
+namespace whisper {
 sml::sml(unsigned short port) :
     server_(io_service_, port),
     thread_ptr_(new boost::thread(boost::bind(&boost::asio::io_service::run,

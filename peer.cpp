@@ -1,6 +1,6 @@
 #include "peer.h"
 
-namespace shadowtalk {
+namespace whisper {
 peer::peer()
 {
     last_beat_ = std::time(NULL);

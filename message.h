@@ -6,7 +6,7 @@
 #include "peer.h"
 #include "key.h"
 
-namespace shadowtalk {
+namespace whisper {
 class message
 {
 public:

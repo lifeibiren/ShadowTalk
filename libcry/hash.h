@@ -1,7 +1,7 @@
 #ifndef HASH_H
 #define HASH_H
 
-namespace shadowtalk{
+namespace whisper{
 class hash
 {
 public:

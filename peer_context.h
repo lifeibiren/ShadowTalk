@@ -7,7 +7,7 @@
 #include "message.h"
 #include "message_piece.h"
 
-namespace shadowtalk {
+namespace whisper {
 class peer_context
 {
 public:

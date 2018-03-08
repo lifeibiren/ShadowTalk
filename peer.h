@@ -5,7 +5,7 @@
 #include <ctime>
 #include "key.h"
 
-namespace shadowtalk {
+namespace whisper {
 class peer
 {
 public:

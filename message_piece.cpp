@@ -1,6 +1,6 @@
 #include "message_piece.h"
 
-namespace shadowtalk {
+namespace whisper {
 message_piece::message_piece()
 {
 
