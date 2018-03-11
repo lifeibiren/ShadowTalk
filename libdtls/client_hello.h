@@ -13,10 +13,9 @@ private:
     protocol_version protocol_version_;
     random random_;
     session_id session_id_;
-    vl_vector<opaque, 0, utils::pow<2, 8>() - 1> cookie_;
-    vl_vector<cipher_suite, 2, utils::pow<2, 16>() - 1> cipher_suites_;
-    vl_vector<compression_method, 1, utils::pow<2, 8>() - 1> compression_methods;
-
+    std::vector<opaque> cookie_;
+    std::vector<cipher_suite> cipher_suites_;
+    std::vector<compression_method> compression_methods;
 };
 } // namespace dtls
 #endif // CLIENT_HELLO_H

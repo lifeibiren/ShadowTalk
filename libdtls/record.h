@@ -1,14 +1,7 @@
 #ifndef RECORD_LAYER_H
 #define RECORD_LAYER_H
 
-#include <boost/shared_ptr.hpp>
-#include <boost/static_assert.hpp>
-#include <boost/endian/endian.hpp>
-#include <cstdint>
-#include <string>
-
-#include "uint48_t.h"
-#include "byte_string.h"
+#include <dtls.h>
 
 class record
 {
@@ -28,34 +21,17 @@ public:
 
     content_type_type type() const;
     void set_type(content_type_type new_type);
-    std::uint16_t epoch() const;
+    uint16_t epoch() const;
     void set_epoch(std::uint16_t new_epoch);
     uint48_t sequence() const;
     void set_sequence(uint48_t new_sequence);
-    std::uint16_t length() const;
+    uint16_t length() const;
 protected:
-    typedef struct protocol_version{
-        std::uint8_t major;
-        std::uint8_t minor;
-    } protocol_version_type;
-
-    typedef struct header{
-        content_type_type type;
-        protocol_version_type version;
-        boost::endian::big_uint16_buf_t epoch;
-        boost::endian::big_uint48_buf_t sequence;
-        boost::endian::big_uint16_buf_t length;
-    } header_type;
-
-private:
     content_type_type type_;
-    protocol_version_type version_;
-    std::uint16_t epoch_;
-    uint48_t sequence_;
-    std::uint16_t length_;
-
-    /* ensure header_type is packed correctly */
-    BOOST_STATIC_ASSERT(sizeof(header_type) == 13U);
+    protocol_version version_;
+    endian::big_uint16_t epoch_;
+    endian::big_uint48_t sequence_;
+    endian::big_uint16_t length_;
 };
 
 #endif // RECORD_LAYER_H

@@ -7,6 +7,12 @@
 #include <boost/integer.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/array.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/static_assert.hpp>
+#include <boost/endian/endian.hpp>
+
+#include <cstdint>
+#include <string>
 
 using namespace boost;
 
@@ -19,5 +25,9 @@ using namespace boost;
 #include "vl_vector.h"
 #include "cipher_suite.h"
 #include "compression_method.h"
+#include "uint48_t.h"
+#include "byte_string.h"
+
+
 
 #endif // DTLS_H
