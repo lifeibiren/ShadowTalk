@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <printf.h>
-#include "exception.h"
 
 namespace whisper {
 sml::sml(unsigned short port) :
@@ -70,8 +69,6 @@ void sml::send_handler(boost::shared_ptr<std::string> bytes,
         to_be_sent_.erase(it);
         std::cout<<"deleted with "<<to_be_sent_.size()<<" left"<<std::endl;
         std::cout.flush();
-    } else {
-        throw unknown_error();
     }
 }
 const std::set<boost::shared_ptr<peer>> &sml::live_peers()

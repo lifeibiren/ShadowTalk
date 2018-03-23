@@ -3,7 +3,6 @@
 
 #include <string>
 #include <ctime>
-#include "key.h"
 
 namespace whisper {
 class peer
@@ -26,7 +25,6 @@ private:
     std::string name_;
     std::string address_;
     unsigned int port_;
-    key key_;
 
     time_t last_beat_;
 };

@@ -7,7 +7,7 @@
 #include <boost/signals2.hpp>
 #include <boost/bimap.hpp>
 #include <boost/bimap/set_of.hpp>
-#include "udp_server.h"
+#include "udp_service.h"
 #include "message.h"
 
 /**
@@ -28,9 +28,6 @@ public:
     const std::set<boost::shared_ptr<peer>> &live_peers();
 
     boost::shared_ptr<message> prepare_empty_message() const;
-
-    void handshake(boost::shared_ptr<peer> target);
-    void shutdown(boost::shared_ptr<peer> target);
 private:
     void send_handler(boost::shared_ptr<std::string> bytes,
                       boost::asio::ip::udp::endpoint &remote_endpoint,
@@ -40,7 +37,7 @@ private:
                          const boost::system::error_code& error);
 
     boost::asio::io_service io_service_;
-    udp_server server_;
+    udp_service server_;
     boost::system::error_code thread_err_;
     boost::shared_ptr<boost::thread> thread_ptr_;
 

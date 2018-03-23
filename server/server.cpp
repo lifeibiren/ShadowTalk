@@ -6,10 +6,15 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
+#include <iostream>
 
-#include "udp_server.h"
+#include "udp_service.h"
+#include "message.h"
 #include "sml.h"
-#include "exception.h"
+
+using boost::asio::ip::udp;
+
+
 whisper::sml sml_(6666);
 void handle_client_request(boost::shared_ptr<whisper::message> msg)
 {

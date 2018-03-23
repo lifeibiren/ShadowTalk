@@ -4,7 +4,7 @@
 #include <string>
 #include "boost/shared_ptr.hpp"
 #include "peer.h"
-#include "key.h"
+
 
 namespace whisper {
 class message
