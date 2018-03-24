@@ -2,7 +2,7 @@
 #include "aes_128.h"
 namespace sml
 {
-encrypt_layer::encrypt_layer(algorithm algo, sptr_bytes key)
+encrypt_layer::encrypt_layer(algorithm algo, sptr_string key)
 {
     switch (algo)
     {
@@ -13,11 +13,11 @@ encrypt_layer::encrypt_layer(algorithm algo, sptr_bytes key)
             break;
     }
 }
-sptr_bytes encrypt_layer::encrypt(sptr_bytes data)
+sptr_string encrypt_layer::encrypt(sptr_string data)
 {
     return encryptor_->encrypt(data);
 }
-sptr_bytes encrypt_layer::decrypt(sptr_bytes data)
+sptr_string encrypt_layer::decrypt(sptr_string data)
 {
     return encryptor_->decrypt(data);
 }

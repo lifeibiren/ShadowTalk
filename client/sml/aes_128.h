@@ -14,10 +14,11 @@ class encryptor;
 class aes_128 : public encryptor
 {
 public:
-    aes_128(sptr_bytes &key);
-    void set_key(sptr_bytes key);
-    sptr_bytes encrypt(sptr_bytes data);
-    sptr_bytes decrypt(sptr_bytes data);
+    aes_128(sptr_string& key);
+    void set_key(sptr_string key);
+    sptr_string encrypt(sptr_string data);
+    sptr_string decrypt(sptr_string data);
+
 private:
     const static size_t block_size_ = CryptoPP::AES::BLOCKSIZE;
     const static size_t key_length_ = CryptoPP::AES::DEFAULT_KEYLENGTH;
@@ -25,6 +26,7 @@ private:
     uint8_t key_[key_length_];
     CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption cfbEncryption;
     CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption cfbDecryption;
+    CryptoPP::AutoSeededRandomPool rnd;
 };
 }
 

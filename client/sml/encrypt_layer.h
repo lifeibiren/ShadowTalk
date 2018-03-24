@@ -1,7 +1,6 @@
 #ifndef ENCRYPT_LAYER_H
 #define ENCRYPT_LAYER_H
 
-
 #include "sml.h"
 
 namespace sml
@@ -14,9 +13,10 @@ public:
     {
         AES_128
     };
-    encrypt_layer(algorithm algo, sptr_bytes key);
-    sptr_bytes encrypt(sptr_bytes data);
-    sptr_bytes decrypt(sptr_bytes data);
+    encrypt_layer(algorithm algo, sptr_string key);
+    sptr_string encrypt(sptr_string data);
+    sptr_string decrypt(sptr_string data);
+
 private:
     shared_ptr<encryptor> encryptor_;
 };

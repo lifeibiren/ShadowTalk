@@ -1,19 +1,16 @@
 #ifndef MESSAGE_PIECE_H
 #define MESSAGE_PIECE_H
 
-#include "hash.h"
-#include <string>
+#include "sml.h"
 
-namespace whisper
+namespace sml
 {
 class message_piece
 {
 public:
     message_piece();
-
 private:
-    hash hash_;
-    std::string bytes_;
+    sptr_string bytes_;
 };
 } // namespace shadowtalk
 
