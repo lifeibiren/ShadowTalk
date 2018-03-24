@@ -1,6 +1,3 @@
 #include "finished.h"
 
-finished::finished()
-{
-
-}
+finished::finished() {}

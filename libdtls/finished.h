@@ -3,8 +3,6 @@
 
 #include "dtls.h"
 
-
-
 class finished : public body
 {
 public:

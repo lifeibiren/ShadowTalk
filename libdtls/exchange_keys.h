@@ -1,7 +1,6 @@
 #ifndef EXCHANGE_KEYS_H
 #define EXCHANGE_KEYS_H
 
-
 class exchange_keys
 {
 public:

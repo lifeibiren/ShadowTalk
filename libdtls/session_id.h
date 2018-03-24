@@ -7,6 +7,7 @@ class session_id
 {
 public:
     session_id();
+
 private:
     std::string session_id_;
 };

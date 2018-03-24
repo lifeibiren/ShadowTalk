@@ -9,14 +9,15 @@
 
 #include <gmpxx.h>
 
-#include "key.h"
 #include "integer.h"
+#include "key.h"
 class rsa
 {
 public:
-    static void keygen(key &pubkey, key &privkey);
-    static void encrypt(boost::shared_ptr<std::string> buf, key &pubkey);
-    static void decrypt(boost::shared_ptr<std::string> buf, key &privkey);
+    static void keygen(key& pubkey, key& privkey);
+    static void encrypt(boost::shared_ptr<std::string> buf, key& pubkey);
+    static void decrypt(boost::shared_ptr<std::string> buf, key& privkey);
+
 private:
 };
 

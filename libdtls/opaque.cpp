@@ -1,4 +1,3 @@
 #include "opaque.h"
 
-opaque::opaque()
-{}
+opaque::opaque() {}

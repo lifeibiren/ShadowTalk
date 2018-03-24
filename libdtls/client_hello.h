@@ -3,7 +3,8 @@
 
 #include "dtls.h"
 
-namespace dtls {
+namespace dtls
+{
 class client_hello : public body
 {
 public:

@@ -1,13 +1,13 @@
 #include "message.h"
 
-namespace whisper {
-message::message(boost::shared_ptr<peer> src_peer,
-                 boost::shared_ptr<std::string> content,
-                 boost::shared_ptr<peer> dst_peer
-        ) : src_peer_(src_peer), content_(content), dst_peer_(dst_peer)
+namespace whisper
 {
-
-}
+message::message(
+    boost::shared_ptr<peer> src_peer, boost::shared_ptr<std::string> content, boost::shared_ptr<peer> dst_peer)
+    : src_peer_(src_peer)
+    , content_(content)
+    , dst_peer_(dst_peer)
+{}
 void message::set_content(boost::shared_ptr<std::string> content)
 {
     content_ = content;
@@ -32,4 +32,4 @@ boost::shared_ptr<std::string> message::content() const
 {
     return content_;
 }
-} //namespace shadowtalk
+} // namespace shadowtalk

@@ -1,6 +1,3 @@
 #include "ciphertext.h"
 
-ciphertext::ciphertext()
-{
-
-}
+ciphertext::ciphertext() {}

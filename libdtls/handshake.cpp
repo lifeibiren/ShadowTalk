@@ -1,6 +1,3 @@
 #include "handshake.h"
 
-handshake::handshake()
-{
-
-}
+handshake::handshake() {}

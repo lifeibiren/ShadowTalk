@@ -1,23 +1,25 @@
 #ifndef SML_H
 #define SML_H
-
+#include <boost/any.hpp>
+#include <boost/array.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
-using namespace boost;
 #include <string>
 
+using namespace boost;
 typedef shared_ptr<std::string> sptr_string;
-
-
-#include "encryptor.h"
+typedef shared_ptr<std::string> sptr_bytes;
+typedef uint8_t byte;
+#include "exception.h"
 #include "encrypt_layer.h"
-#include "aes_256.h"
-
-namespace sml {
+namespace sml
+{
 class sml
 {
 public:
     sml();
 };
-} //namespace sml
+} // namespace sml
 
 #endif // SML_H

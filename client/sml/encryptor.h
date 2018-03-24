@@ -3,13 +3,14 @@
 
 #include "sml.h"
 
-namespace sml {
+namespace sml
+{
 class encryptor
 {
 public:
-    virtual sptr_string encrypt(sptr_string data) = 0;
-    virtual sptr_string decrypt(sptr_string data) = 0;
+    virtual sptr_bytes encrypt(sptr_bytes data) = 0;
+    virtual sptr_bytes decrypt(sptr_bytes data) = 0;
 };
-} // namespace sml
+}
 
 #endif // ENCRYPTOR_H

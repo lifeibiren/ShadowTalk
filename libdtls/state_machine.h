@@ -1,11 +1,11 @@
 #ifndef DTLS_STATE_MACHINE_H
 #define DTLS_STATE_MACHINE_H
 
-#include <boost/shared_ptr.hpp>
+#include "record.h"
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
 #include <string>
-#include "record.h"
 
 class state_machine
 {
@@ -19,8 +19,8 @@ private:
     void sending_handler(boost::shared_ptr<std::string> bytes);
     void waiting_handler(boost::shared_ptr<std::string> bytes);
 
-    boost::function<void (boost::shared_ptr<std::string> bytes)> handler_;
-    boost::function<void (boost::shared_ptr<record> record)> finish_handler_;
+    boost::function<void(boost::shared_ptr<std::string> bytes)> handler_;
+    boost::function<void(boost::shared_ptr<record> record)> finish_handler_;
 };
 
 #endif // DTLS_STATE_MACHINE_H

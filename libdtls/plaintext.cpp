@@ -1,6 +1,3 @@
 #include "plaintext.h"
 
-plaintext::plaintext()
-{
-
-}
+plaintext::plaintext() {}

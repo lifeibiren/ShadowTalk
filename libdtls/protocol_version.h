@@ -8,6 +8,7 @@ class protocol_version
 public:
     protocol_version();
     protocol_version(uint8_t major, uint8_t minor);
+
 private:
     endian::big_uint8_t major_;
     endian::big_uint8_t minor_;

@@ -3,8 +3,10 @@
 
 #include "sml.h"
 
-namespace sml {
-class aes_256 : public encryptor
+#include "encrypt_layer.h"
+namespace sml
+{
+class aes_256
 {
 public:
     aes_256();

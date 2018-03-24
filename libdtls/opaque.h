@@ -7,6 +7,7 @@ class opaque
 {
 public:
     opaque();
+
 private:
     boost::uint8_t byte;
 };

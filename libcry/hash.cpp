@@ -1,8 +1,6 @@
 #include "hash.h"
 
-namespace whisper {
-hash::hash()
+namespace whisper
 {
-
-}
-} //namespace shadowtalk
+hash::hash() {}
+} // namespace shadowtalk

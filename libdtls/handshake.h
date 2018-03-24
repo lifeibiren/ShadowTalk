@@ -1,8 +1,8 @@
 #ifndef HANDSHAKE_PROTOCOL_H
 #define HANDSHAKE_PROTOCOL_H
 
-#include <boost/integer.hpp>
 #include <boost/endian/endian.hpp>
+#include <boost/integer.hpp>
 
 #include "body.h"
 
@@ -11,7 +11,8 @@ using namespace boost;
 class handshake
 {
 public:
-    enum class handshake_type : uint8_t {
+    enum class handshake_type : uint8_t
+    {
         hello_request = 0,
         client_hello = 1,
         server_hello = 2,

@@ -1,28 +1,28 @@
 #include "record.h"
 
-//record::record(boost::shared_ptr<byte_string> bytes) //big endian
+// record::record(boost::shared_ptr<byte_string> bytes) //big endian
 //{
 
 //}
-//void record::from_bytes(boost::shared_ptr<byte_string> bytes) //big endian
+// void record::from_bytes(boost::shared_ptr<byte_string> bytes) //big endian
 //{
 
 //}
-//boost::shared_ptr<byte_string> record::to_bytes() const //big endian
+// boost::shared_ptr<byte_string> record::to_bytes() const //big endian
 //{
 
 //}
-void record::from_bytes(boost::shared_ptr<byte_string> bytes) //big endian
+void record::from_bytes(boost::shared_ptr<byte_string> bytes) // big endian
 {
-//    assert(bytes->size() >= sizeof(header_type));
-//    header_type *header_ptr = (header_type *)bytes->c_array();
+    //    assert(bytes->size() >= sizeof(header_type));
+    //    header_type *header_ptr = (header_type *)bytes->c_array();
 
-//    type_ = header_ptr->type;
-//    epoch_ = header_ptr->epoch.value();
-//    sequence_ = header_ptr->sequence.value();
-//    length_ = header_ptr->length.value();
+    //    type_ = header_ptr->type;
+    //    epoch_ = header_ptr->epoch.value();
+    //    sequence_ = header_ptr->sequence.value();
+    //    length_ = header_ptr->length.value();
 }
-//boost::shared_ptr<byte_string> record::to_bytes() const //big endian
+// boost::shared_ptr<byte_string> record::to_bytes() const //big endian
 //{
 //    header_type header;
 //    header.type = type_;

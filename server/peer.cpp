@@ -1,17 +1,18 @@
 #include "peer.h"
 
-namespace whisper {
+namespace whisper
+{
 peer::peer()
 {
     last_beat_ = std::time(NULL);
 }
-peer::peer(const std::string &address,  unsigned int port) :
-    peer()
+peer::peer(const std::string& address, unsigned int port)
+    : peer()
 {
     address_ = address;
     port_ = port;
 }
-const std::string &peer::address() const
+const std::string& peer::address() const
 {
     return address_;
 }
@@ -27,7 +28,7 @@ std::string peer::to_string() const
 {
     return address_ + " " + std::to_string(port_) + '\n';
 }
-//bool peer::operator=(const peer &r_peer)
+// bool peer::operator=(const peer &r_peer)
 //{
 //    address_ = r_peer.address_;
 //    port_ = r_peer.port_;
@@ -35,38 +36,46 @@ std::string peer::to_string() const
 //    pub_key_ = r_peer.pub_key_;
 //    last_beat_ = ;
 //}
-bool peer::operator==(const peer &r_peer) const
+bool peer::operator==(const peer& r_peer) const
 {
-    if (address_.compare(r_peer.address_) == 0 &&
-            port_ == r_peer.port_) {
+    if (address_.compare(r_peer.address_) == 0 && port_ == r_peer.port_)
+    {
         return true;
-    } else {
+    }
+    else
+    {
         return false;
     }
 }
-bool peer::operator!=(const peer &r_peer) const
+bool peer::operator!=(const peer& r_peer) const
 {
     return !(*this == r_peer);
 }
-bool peer::operator<(const peer &r_peer) const
+bool peer::operator<(const peer& r_peer) const
 {
-    if (*this == r_peer) {
+    if (*this == r_peer)
+    {
         return false;
     }
     int comp_result = address_.compare(r_peer.address_);
-    if (comp_result < 0 ||
-            (comp_result == 0 && port_ < r_peer.port_)) {
+    if (comp_result < 0 || (comp_result == 0 && port_ < r_peer.port_))
+    {
         return true;
-    } else {
+    }
+    else
+    {
         return false;
     }
 }
-bool peer::operator>(const peer &r_peer) const
+bool peer::operator>(const peer& r_peer) const
 {
-    if (*this == r_peer) {
+    if (*this == r_peer)
+    {
         return false;
-    } else {
+    }
+    else
+    {
         return !(*this < r_peer);
     }
 }
-} //namespace shadowtalk
+} // namespace shadowtalk

@@ -1,12 +1,13 @@
 #ifndef HASH_H
 #define HASH_H
 
-namespace whisper{
+namespace whisper
+{
 class hash
 {
 public:
     hash();
 };
-} //namespace shadowtalk
+} // namespace shadowtalk
 
 #endif // HASH_H
