@@ -32,9 +32,17 @@ struct io_error : exception_base
 struct file_read_error : io_error
 {};
 
+struct data_error : exception_base
+{};
+struct invalid_data_error : data_error
+{};
+struct duplicate_data_error : data_error
+{};
+struct nonexistent_data_error : data_error
+{};
+
 struct unknown_error : exception_base
 {};
-struct invalid_data_error : unknown_error
-{};
+
 
 #endif // EXCEPTION_H
