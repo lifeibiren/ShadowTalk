@@ -14,4 +14,12 @@ uint16_t address::port() const
 {
     return port_;
 }
+bool address::operator==(const address &val) const
+{
+    if (*ip_addr_ == *(val.ip_addr_) && port_ == val.port_) {
+        return true;
+    } else {
+        return false;
+    }
+}
 }

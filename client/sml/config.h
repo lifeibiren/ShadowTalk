@@ -13,6 +13,7 @@
 #include <boost/function.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/unordered_map.hpp>
 
 using namespace boost;
 typedef shared_ptr<std::string> sptr_string;
