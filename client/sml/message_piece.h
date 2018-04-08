@@ -7,14 +7,18 @@
 namespace sml
 {
 class message;
-class message_piece
+class datagram
 {
 public:
-    message_piece();
-    message::id_type message_id() const;
-private:
+    datagram();
+    datagram(shared_ptr<std::string> bytes);
+    operator shared_ptr<std::string> () const;
+
     message::id_type id_;
-    sptr_string bytes_;
+    message::msg_type type_;
+    uint32_t length_;
+    uint32_t offset_;
+    std::string data_;
 };
 } // namespace shadowtalk
 

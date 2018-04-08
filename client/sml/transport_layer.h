@@ -15,7 +15,6 @@ public:
     void recv(shared_ptr<message> msg, handler_type handler);
 private:
     shared_ptr<udp_layer> udp_layer_;
-
 };
 } // namespace sml
 

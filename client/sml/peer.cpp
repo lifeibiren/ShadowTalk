@@ -2,10 +2,12 @@
 #include "message_piece.h"
 
 namespace sml {
-peer::peer(std::string addr, uint8_t port) :
-    addr_(addr), port_(port)
+peer::peer(std::string host, uint8_t port) :
+    addr_(host, port)
 {
 }
+peer::peer(address addr) : addr_(addr)
+{}
 
 void peer::send(shared_ptr<message> msg, handler_type handler)
 {

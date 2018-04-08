@@ -14,7 +14,10 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/endian/endian.hpp>
 
+#include <cinttypes>
+#include <string>
 using namespace boost;
 typedef shared_ptr<std::string> sptr_string;
 typedef uint8_t byte;
