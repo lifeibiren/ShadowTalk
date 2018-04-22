@@ -5,9 +5,9 @@
  * -------------
  * |    sml    |  ---- correspond to a local port
  * -------------
- * |    peer   |  ---- correspond to a remote peer
+ * |  stream   |  ---- correspond to a data stream
  * -------------
- * | transport |  ---- correspond to a message
+ * | transport |  ---- correspond to a remote peer
  * -------------
  * |  encrypt  |  ---- reusable, pure functional, handle each datagram
  * -------------
@@ -34,7 +34,6 @@
 #include "config.h"
 #include "encrypt_layer.h"
 #include "transport_layer.h"
-#include "peer.h"
 
 namespace sml
 {
@@ -42,7 +41,6 @@ class sml
 {
 public:
     sml();
-    shared_ptr<peer> create_peer(std::string addr, uint16_t port);
 };
 } // namespace sml
 

@@ -1,7 +1,7 @@
 #ifndef ENCRYPT_LAYER_H
 #define ENCRYPT_LAYER_H
 
-#include "sml.h"
+#include "config.h"
 
 namespace sml
 {

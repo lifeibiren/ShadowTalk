@@ -8,6 +8,7 @@
 #include <boost/any.hpp>
 #include <boost/array.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
@@ -19,9 +20,13 @@
 #include <cinttypes>
 #include <string>
 using namespace boost;
+using boost::make_shared;
 typedef shared_ptr<std::string> sptr_string;
 typedef uint8_t byte;
 
+namespace sml {
+extern asio::io_context sml_io_context;
+}
 #include "exception.h"
 
 #endif // CONFIG_H

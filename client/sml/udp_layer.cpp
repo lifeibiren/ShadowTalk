@@ -1,8 +1,8 @@
 #include "udp_layer.h"
 
 namespace sml {
-udp_layer::udp_layer(asio::io_service& io_service, uint16_t port)
-    : socket_(io_service, asio::ip::udp::endpoint(asio::ip::udp::v4(), port))
+udp_layer::udp_layer(uint16_t port)
+    : socket_(sml_io_context, asio::ip::udp::endpoint(asio::ip::udp::v4(), port))
 {
     start_receive();
 }

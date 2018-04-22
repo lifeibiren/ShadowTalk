@@ -9,7 +9,7 @@ class udp_layer
 public:
     typedef function<void (shared_ptr<std::string> msg, shared_ptr<address> addr)> handler_type;
 
-    udp_layer(asio::io_service& io_service, uint16_t port);
+    udp_layer(uint16_t port);
     void send_to(shared_ptr<std::string> msg, shared_ptr<address> addr, handler_type handler);
     void register_handler(handler_type handler, shared_ptr<address> addr_hits);
     void register_handler(handler_type handler);

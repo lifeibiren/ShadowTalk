@@ -2,5 +2,7 @@
 
 namespace sml
 {
+asio::io_context io_context;
+
 sml::sml() {}
 } // namespace sml
