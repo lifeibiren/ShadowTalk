@@ -1,28 +1,28 @@
 #include "transport_layer.h"
 
 namespace sml {
-transport_layer::transport_layer(shared_ptr<udp_layer> udp_layer, address addr) :
+peer::peer(udp_layer &udp_layer, const address &addr) :
     current_state_(initial), udp_layer_(udp_layer), addr_(addr)
 {
-    udp_layer_->register_handler(boost::bind(&transport_layer::packet_handler,
+    udp_layer_.register_handler(boost::bind(&peer::packet_handler,
                                             this,
                                             _1,
                                             _2));
 }
 
-shared_ptr<stream> transport_layer::create_stream(id_type id)
+shared_ptr<stream> peer::create_stream(id_type id)
 {
     stream_map_type::iterator it = stream_map_.find(id);
     if (it != stream_map_.end())
     {
         return nullptr;
     }
-    shared_ptr<stream> new_stream = make_shared<stream>(id, bind(&transport_layer::send_datagram, this, _1));
+    shared_ptr<stream> new_stream = make_shared<stream>(id, bind(&peer::send_datagram, this, _1));
     stream_map_.insert(stream_map_type::value_type(id, new_stream));
     return new_stream;
 }
 
-shared_ptr<stream> transport_layer::get_stream(id_type id)
+shared_ptr<stream> peer::get_stream(id_type id)
 {
     stream_map_type::iterator it = stream_map_.find(id);
     if (it != stream_map_.end())
@@ -35,7 +35,7 @@ shared_ptr<stream> transport_layer::get_stream(id_type id)
     }
 }
 
-shared_ptr<stream> transport_layer::get_new_stream()
+void peer::async_accept_new_stream(stream_handler_type handler)
 {
     if (!new_stream_id_.empty())
     {
@@ -43,18 +43,21 @@ shared_ptr<stream> transport_layer::get_new_stream()
         new_stream_id_.erase(new_stream_id_.begin());
         if (it != stream_map_.end())
         {
-            return it->second;
+            handler(it->second);
         }
     }
-    return nullptr;
+    else
+    {
+        new_stream_handler_.push_back(handler);
+    }
 }
 
-std::vector<transport_layer::id_type> transport_layer::stream_id_vec() const
+std::vector<peer::id_type> peer::new_stream_id_vec() const
 {
     return new_stream_id_;
 }
 
-void transport_layer::packet_handler(shared_ptr<std::string> packet, shared_ptr<address> addr)
+void peer::packet_handler(shared_ptr<std::string> packet, shared_ptr<address> addr)
 {
     if (current_state_ == established)
     {
@@ -65,29 +68,29 @@ void transport_layer::packet_handler(shared_ptr<std::string> packet, shared_ptr<
         handshake(packet, addr);
     }
 }
-void transport_layer::send_public_params()
+void peer::send_public_params()
 {
 
 }
 
-void transport_layer::handle_public_params(shared_ptr<std::string> msg, shared_ptr<address> addr)
+void peer::handle_public_params(shared_ptr<std::string> msg, shared_ptr<address> addr)
 {
 
 }
-void transport_layer::send_fake_shared_key()
+void peer::send_fake_shared_key()
 {
 
 }
-void transport_layer::handle_fake_shared_key(shared_ptr<std::string> msg, shared_ptr<address> addr)
+void peer::handle_fake_shared_key(shared_ptr<std::string> msg, shared_ptr<address> addr)
 {
 
 }
-void transport_layer::generate_key()
+void peer::generate_key()
 {
 
 }
 
-void transport_layer::handshake(shared_ptr<std::string> msg, shared_ptr<address> addr)
+void peer::handshake(shared_ptr<std::string> msg, shared_ptr<address> addr)
 {
     if (!(current_state_ & sent_public_params))
     {
@@ -115,7 +118,7 @@ void transport_layer::handshake(shared_ptr<std::string> msg, shared_ptr<address>
 //    encrypt_layer_ = boost::make_shared<encrypt_layer>(encrypt_layer::algorithm::AES_128, key_);
 }
 
-void transport_layer::feed(shared_ptr<std::string> encrypted_msg, shared_ptr<address> addr)
+void peer::feed(shared_ptr<std::string> encrypted_msg, shared_ptr<address> addr)
 {
     // decrypt first
     boost::shared_ptr<std::string> msg = encrypt_layer_->decrypt(encrypted_msg);
@@ -132,22 +135,32 @@ void transport_layer::feed(shared_ptr<std::string> encrypted_msg, shared_ptr<add
         stream_map_.insert(stream_map_type::value_type(new_datagram->id_,
                                                        make_shared<stream>(
                                                            stream(new_datagram->id_,
-                                                                  bind(&transport_layer::send_datagram,
+                                                                  bind(&peer::send_datagram,
                                                                        this,
                                                                        _1)))));
-        // record new stream id
-        new_stream_id_.push_back(new_datagram->id_);
+
         it = stream_map_.find(new_datagram->id_);
+        if (new_stream_handler_.empty())
+        {
+            // record new stream id
+            new_stream_id_.push_back(new_datagram->id_);
+        }
+        else
+        {
+            stream_handler_type handler = new_stream_handler_[0];
+            new_stream_handler_.erase(new_stream_handler_.begin());
+            handler(it->second);
+        }
     }
     it->second->feed(new_datagram);
 }
-void transport_layer::send_datagram(shared_ptr<datagram> msg)
+void peer::send_datagram(shared_ptr<datagram> msg)
 {
     // convert to rawbytes
     shared_ptr<std::string> bytes = shared_ptr<std::string>(*msg);
     // encrypt first
     boost::shared_ptr<std::string> encrypted = encrypt_layer_->encrypt(bytes);
     // TODO: add handler
-    udp_layer_->send_to(encrypted, make_shared<address>(addr_), [](shared_ptr<std::string> msg, shared_ptr<address> addr){});
+    udp_layer_.send_to(encrypted, make_shared<address>(addr_), [](shared_ptr<std::string> msg, shared_ptr<address> addr){});
 }
 }

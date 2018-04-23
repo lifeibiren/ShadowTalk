@@ -5,6 +5,7 @@ stream::stream(id_type id, send_callback_type callback) :
     state_(stream_state_type::initial), id_(id), timer(sml_io_context), send_callback_(callback)
 {
 }
+
 void stream::feed(shared_ptr<datagram> new_datagram)
 {
     switch (new_datagram->type_) {
@@ -52,12 +53,14 @@ void stream::feed(shared_ptr<datagram> new_datagram)
         }
     }
 }
+
 stream &stream::operator>>(shared_ptr<std::string> data)
 {
     (*data) += *recv_data_;
     recv_data_->clear();
     return *this;
 }
+
 stream &stream::operator<<(shared_ptr<std::string> data)
 {
     (*send_data_) = *data;
@@ -83,6 +86,7 @@ stream &stream::operator<<(shared_ptr<std::string> data)
 
     return *this;
 }
+
 void stream::send_one_datagram()
 {
     if (send_datagram_queue_.empty()) {
@@ -92,6 +96,7 @@ void stream::send_one_datagram()
     timer.expires_from_now(posix_time::seconds(1));
     timer.async_wait(bind(&stream::retransmit, this));
 }
+
 void stream::retransmit()
 {
     send_callback_(send_datagram_queue_.begin()->second);

@@ -9,17 +9,18 @@
 #include "stream.h"
 
 namespace sml {
-class transport_layer
+class peer
 {
 public:
     typedef boost::function<void (shared_ptr<message>)> handler_type;
+    typedef function<void (shared_ptr<stream>)> stream_handler_type;
     typedef datagram::id_type id_type;
 
-    transport_layer(shared_ptr<udp_layer> udp_layer, address addr);
+    peer(udp_layer &udp_layer, const address &addr);
     shared_ptr<stream> create_stream(id_type id);
     shared_ptr<stream> get_stream(id_type id);
-    shared_ptr<stream> get_new_stream();
-    std::vector<id_type> stream_id_vec() const;
+    void async_accept_new_stream(stream_handler_type handler);
+    std::vector<id_type> new_stream_id_vec() const;
 private:
     void packet_handler(shared_ptr<std::string> packet, shared_ptr<address> addr);
     void feed(shared_ptr<std::string> msg, shared_ptr<address> addr);
@@ -43,7 +44,7 @@ private:
 #define established 0xf
     uint16_t current_state_;
 
-    shared_ptr<udp_layer> udp_layer_;
+    udp_layer &udp_layer_;
     const address addr_;
     shared_ptr<std::string> key_;
     shared_ptr<encrypt_layer> encrypt_layer_;
@@ -51,6 +52,7 @@ private:
     typedef std::map<id_type, shared_ptr<stream>> stream_map_type;
     stream_map_type stream_map_;
     std::vector<id_type> new_stream_id_;
+    std::vector<stream_handler_type> new_stream_handler_;
 
     shared_ptr<message> send_msg_, recv_msg_;
 };

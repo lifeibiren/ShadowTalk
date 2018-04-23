@@ -24,7 +24,7 @@ public:
     template <unsigned long B, unsigned long E> struct pow
     {
         static const unsigned long result = B * pow<B, E - 1>::result;
-        constexpr operator unsigned long() { return result; }
+        constexpr operator unsigned long() const { return result; }
     };
 
     template <unsigned long B> struct pow<B, 0>

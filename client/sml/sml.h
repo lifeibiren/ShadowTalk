@@ -7,7 +7,7 @@
  * -------------
  * |  stream   |  ---- correspond to a data stream
  * -------------
- * | transport |  ---- correspond to a remote peer
+ * |   peer    |  ---- correspond to a remote peer
  * -------------
  * |  encrypt  |  ---- reusable, pure functional, handle each datagram
  * -------------
@@ -17,7 +17,7 @@
  *
  * sml : initialize udp_layer, handle handshake, create peers
  *
- * peer : high-level interfaces used to send and receive data with remote peers
+ * stream : high-level interfaces used to send and receive data with remote peers
  *
  * transport : handle a single message associated with a specific peer
  *
@@ -32,15 +32,23 @@
  */
 
 #include "config.h"
-#include "encrypt_layer.h"
+#include "udp_layer.h"
 #include "transport_layer.h"
 
 namespace sml
 {
-class sml
+class service :
+        public enable_shared_from_this<service>
 {
 public:
-    sml();
+    typedef function<void (shared_ptr<peer>)> handler_type;
+    service(uint16_t port);
+    shared_ptr<peer> create_peer(const address &addr);
+    void async_accept_peer(handler_type handler);
+private:
+    uint16_t port_;
+    udp_layer udp_layer_;
+    std::vector<handler_type> handler_list_;
 };
 } // namespace sml
 

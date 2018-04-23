@@ -3,8 +3,11 @@
 
 #include "config.h"
 #include "address.h"
+
 namespace sml {
-class udp_layer
+class service;
+class udp_layer :
+        public enable_shared_from_this<udp_layer>
 {
 public:
     typedef function<void (shared_ptr<std::string> msg, shared_ptr<address> addr)> handler_type;
@@ -17,7 +20,6 @@ private:
     void start_receive();
     void handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred);
     void handle_send(const boost::system::error_code& error, shared_ptr<std::string> message, shared_ptr<address> addr, handler_type handler);
-
 
     struct hash_func : std::unary_function<shared_ptr<address>, std::size_t>
     {

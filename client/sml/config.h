@@ -26,7 +26,14 @@ typedef uint8_t byte;
 
 namespace sml {
 extern asio::io_context sml_io_context;
+class peer;
+class udp_layer;
+class stream;
+class service;
+class encrypt_layer;
+class address;
 }
 #include "exception.h"
+#include "utils.h"
 
 #endif // CONFIG_H
