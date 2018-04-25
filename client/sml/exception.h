@@ -44,5 +44,4 @@ struct nonexistent_data_error : data_error
 struct unknown_error : exception_base
 {};
 
-
 #endif // EXCEPTION_H

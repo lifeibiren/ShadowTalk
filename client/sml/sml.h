@@ -32,23 +32,25 @@
  */
 
 #include "config.h"
-#include "udp_layer.h"
 #include "transport_layer.h"
+#include "udp_layer.h"
 
 namespace sml
 {
-class service :
-        public enable_shared_from_this<service>
+class service : public enable_shared_from_this<service>
 {
 public:
-    typedef function<void (shared_ptr<peer>)> handler_type;
+    typedef function<void(shared_ptr<peer>)> handler_type;
     service(uint16_t port);
-    shared_ptr<peer> create_peer(const address &addr);
+    shared_ptr<peer> create_peer(const address& addr);
     void async_accept_peer(handler_type handler);
+
 private:
+    void new_peer_handler(shared_ptr<std::string> msg, shared_ptr<address> addr);
     uint16_t port_;
     udp_layer udp_layer_;
     std::vector<handler_type> handler_list_;
+    std::vector<shared_ptr<peer>> new_peer_list_;
 };
 } // namespace sml
 

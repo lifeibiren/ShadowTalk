@@ -1,7 +1,6 @@
 #ifndef BYTE_STRING_H
 #define BYTE_STRING_H
 
-
 #include "config.h"
 
 /**
@@ -10,7 +9,8 @@
  * while it treats the endian of all methods' parameters as what it should be
  * depeneding on the architecture.
  */
-namespace sml {
+namespace sml
+{
 class byte_string
 {
 public:
@@ -20,8 +20,8 @@ public:
         seek_cur = 1,
         seek_end = 2
     };
-    byte_string() :
-          buf_(NULL)
+    byte_string()
+        : buf_(NULL)
         , data_len_(0)
         , buf_size_(0)
         , offset_(0)

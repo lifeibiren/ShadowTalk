@@ -1,11 +1,12 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#include "config.h"
 #include "address.h"
+#include "config.h"
 #include <map>
 
-namespace sml {
+namespace sml
+{
 class datagram;
 class message
 {

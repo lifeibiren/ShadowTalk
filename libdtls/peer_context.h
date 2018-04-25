@@ -18,7 +18,13 @@ public:
     boost::shared_ptr<message> get_message() const;
 
 private:
-    typedef enum peer_state { FINISHED, PREPARING, SENDING, WAITING } peer_state_type;
+    typedef enum peer_state
+    {
+        FINISHED,
+        PREPARING,
+        SENDING,
+        WAITING
+    } peer_state_type;
 
     peer_state_type peer_state_;
     hash hash_of_last_sent_;

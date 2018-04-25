@@ -1,29 +1,33 @@
 #include "stream.h"
 
-namespace sml {
-stream::stream(id_type id, send_callback_type callback) :
-    state_(stream_state_type::initial), id_(id), timer(sml_io_context), send_callback_(callback)
+namespace sml
 {
-}
+stream::stream(id_type id, send_callback_type callback)
+    : state_(stream_state_type::initial)
+    , id_(id)
+    , timer(sml_io_context)
+    , send_callback_(callback)
+{}
 
 void stream::feed(shared_ptr<datagram> new_datagram)
 {
-    switch (new_datagram->type_) {
-    case datagram::msg_type::abort:
-    case datagram::msg_type::data:
+    switch (new_datagram->type_)
     {
-        recv_datagram_queue_[new_datagram->offset_] = new_datagram;
-        break;
-    }
-    case datagram::msg_type::acknowledge:
-    {
-        send_offset_ = new_datagram->offset_;
-        send_one_datagram();
-        break;
-    }
-    default:
-        // ignore datagram of other types
-        return;
+        case datagram::msg_type::abort:
+        case datagram::msg_type::data:
+        {
+            recv_datagram_queue_[new_datagram->offset_] = new_datagram;
+            break;
+        }
+        case datagram::msg_type::acknowledge:
+        {
+            send_offset_ = new_datagram->offset_;
+            send_one_datagram();
+            break;
+        }
+        default:
+            // ignore datagram of other types
+            return;
     }
 
     datagram_map_type::iterator it = recv_datagram_queue_.begin();
@@ -54,14 +58,14 @@ void stream::feed(shared_ptr<datagram> new_datagram)
     }
 }
 
-stream &stream::operator>>(shared_ptr<std::string> data)
+stream& stream::operator>>(shared_ptr<std::string> data)
 {
     (*data) += *recv_data_;
     recv_data_->clear();
     return *this;
 }
 
-stream &stream::operator<<(shared_ptr<std::string> data)
+stream& stream::operator<<(shared_ptr<std::string> data)
 {
     (*send_data_) = *data;
 
@@ -89,7 +93,8 @@ stream &stream::operator<<(shared_ptr<std::string> data)
 
 void stream::send_one_datagram()
 {
-    if (send_datagram_queue_.empty()) {
+    if (send_datagram_queue_.empty())
+    {
         return;
     }
     send_callback_(send_datagram_queue_.begin()->second);

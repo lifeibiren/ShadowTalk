@@ -1,6 +1,7 @@
 #include "udp_layer.h"
 
-namespace sml {
+namespace sml
+{
 udp_layer::udp_layer(uint16_t port)
     : socket_(sml_io_context, asio::ip::udp::endpoint(asio::ip::udp::v4(), port))
 {
@@ -24,10 +25,12 @@ void udp_layer::handle_receive(const boost::system::error_code& error, std::size
          */
         shared_ptr<address> addr = make_shared<address>(remote_endpoint_);
         auto it = handler_map_.find(addr);
-        if (it != handler_map_.end()) {
+        if (it != handler_map_.end())
+        {
             (it->second)(received_message, addr);
         }
-        for (auto it = default_handler_list_.begin(); it != default_handler_list_.end(); it ++) {
+        for (auto it = default_handler_list_.begin(); it != default_handler_list_.end(); it++)
+        {
             (*it)(received_message, addr);
         }
         start_receive();
@@ -51,7 +54,8 @@ void udp_layer::register_handler(handler_type handler)
     default_handler_list_.push_back(handler);
 }
 
-void udp_layer::handle_send(const boost::system::error_code& error, shared_ptr<std::string> message, shared_ptr<address> addr, handler_type handler)
+void udp_layer::handle_send(const boost::system::error_code& error, shared_ptr<std::string> message,
+    shared_ptr<address> addr, handler_type handler)
 {
     if (!error)
     {

@@ -2,28 +2,31 @@
 #define TRANSPORT_LAYER_H
 
 #include "config.h"
+#include "encrypt_layer.h"
 #include "message.h"
 #include "message_piece.h"
-#include "udp_layer.h"
-#include "encrypt_layer.h"
 #include "stream.h"
+#include "udp_layer.h"
 
-namespace sml {
+namespace sml
+{
 class peer
 {
 public:
-    typedef boost::function<void (shared_ptr<message>)> handler_type;
-    typedef function<void (shared_ptr<stream>)> stream_handler_type;
+    typedef boost::function<void(shared_ptr<message>)> handler_type;
+    typedef function<void(shared_ptr<stream>)> stream_handler_type;
     typedef datagram::id_type id_type;
 
-    peer(udp_layer &udp_layer, const address &addr);
+    peer(udp_layer& udp_layer, const address& addr);
     shared_ptr<stream> create_stream(id_type id);
     shared_ptr<stream> get_stream(id_type id);
     void async_accept_new_stream(stream_handler_type handler);
     std::vector<id_type> new_stream_id_vec() const;
+
+    void feed(shared_ptr<std::string> msg, shared_ptr<address> addr);
+
 private:
     void packet_handler(shared_ptr<std::string> packet, shared_ptr<address> addr);
-    void feed(shared_ptr<std::string> msg, shared_ptr<address> addr);
     void handshake(shared_ptr<std::string> msg, shared_ptr<address> addr);
 
     void send_public_params();
@@ -34,17 +37,17 @@ private:
 
     void send_datagram(shared_ptr<datagram> data);
 
-#define initial  0x0
-#define sent_public_params  0x1
+#define initial 0x0
+#define sent_public_params 0x1
 #define received_public_params 0x2
-#define public_params_exchanged  (sent_public_params | received_public_params)
+#define public_params_exchanged (sent_public_params | received_public_params)
 #define sent_fake_shared_key 0x4
 #define received_fake_shared_key 0x8
 #define fake_shared_key_exchanged (sent_fake_shared_key | received_fake_shared_key)
 #define established 0xf
     uint16_t current_state_;
 
-    udp_layer &udp_layer_;
+    udp_layer& udp_layer_;
     const address addr_;
     shared_ptr<std::string> key_;
     shared_ptr<encrypt_layer> encrypt_layer_;

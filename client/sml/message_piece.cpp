@@ -12,7 +12,7 @@ datagram::datagram(shared_ptr<std::string> bytes)
     b_str >> length_;
     b_str >> data_;
 }
-datagram::operator shared_ptr<std::string> () const
+datagram::operator shared_ptr<std::string>() const
 {
     byte_string b_str;
     b_str << id_;

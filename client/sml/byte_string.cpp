@@ -1,7 +1,8 @@
 #include "byte_string.h"
 #include "utils.h"
 
-namespace sml {
+namespace sml
+{
 byte_string::byte_string(int init_buf_size)
     : byte_string()
 {
