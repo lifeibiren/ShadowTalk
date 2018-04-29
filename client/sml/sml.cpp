@@ -2,13 +2,22 @@
 
 namespace sml
 {
-asio::io_context io_context;
+asio::io_context sml_io_context;
 
 service::service(uint16_t port)
     : port_(port)
     , udp_layer_(port)
 {
+}
+
+void service::init()
+{
     udp_layer_.register_handler(bind(&service::new_peer_handler, shared_from_this(), _1, _2));
+}
+
+void service::start()
+{
+    sml_io_context.run();
 }
 
 shared_ptr<peer> service::create_peer(const address& addr)

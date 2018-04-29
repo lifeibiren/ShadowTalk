@@ -8,6 +8,8 @@ peer::peer(udp_layer& udp_layer, const address& addr)
     , addr_(addr)
 {
     udp_layer_.register_handler(boost::bind(&peer::packet_handler, this, _1, _2));
+    encrypt_layer_ = boost::make_shared<encrypt_layer>(encrypt_layer::algorithm::AES_128,
+                                                       boost::make_shared<std::string>("1234567890123456"));
 }
 
 shared_ptr<stream> peer::create_stream(id_type id)

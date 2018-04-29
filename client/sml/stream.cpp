@@ -7,6 +7,7 @@ stream::stream(id_type id, send_callback_type callback)
     , id_(id)
     , timer(sml_io_context)
     , send_callback_(callback)
+    , recv_data_(make_shared<std::string>())
 {}
 
 void stream::feed(shared_ptr<datagram> new_datagram)
@@ -58,16 +59,16 @@ void stream::feed(shared_ptr<datagram> new_datagram)
     }
 }
 
-stream& stream::operator>>(shared_ptr<std::string> data)
+stream& stream::operator>>(shared_ptr<std::string> &data)
 {
-    (*data) += *recv_data_;
-    recv_data_->clear();
+    data = recv_data_;
+    recv_data_ = make_shared<std::string>();
     return *this;
 }
 
-stream& stream::operator<<(shared_ptr<std::string> data)
+stream& stream::operator<<(shared_ptr<std::string> &data)
 {
-    (*send_data_) = *data;
+    send_data_ = data;
 
     size_t offset = 0;
     while (offset < send_data_->size())
@@ -84,6 +85,8 @@ stream& stream::operator<<(shared_ptr<std::string> data)
         new_datagram->data_ = send_data_->substr(offset, seg_length);
 
         send_datagram_queue_.insert(datagram_map_type::value_type(new_datagram->offset_, new_datagram));
+
+        offset += seg_length;
     }
 
     send_one_datagram();

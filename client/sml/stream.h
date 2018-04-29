@@ -15,8 +15,8 @@ public:
     stream(id_type id, send_callback_type callback);
     void feed(shared_ptr<datagram> packet);
 
-    stream& operator>>(shared_ptr<std::string> data);
-    stream& operator<<(shared_ptr<std::string> data);
+    stream &operator>>(shared_ptr<std::string> &data);
+    stream &operator<<(shared_ptr<std::string> &data);
 
 private:
     void send_one_datagram();

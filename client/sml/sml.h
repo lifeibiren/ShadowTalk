@@ -42,6 +42,8 @@ class service : public enable_shared_from_this<service>
 public:
     typedef function<void(shared_ptr<peer>)> handler_type;
     service(uint16_t port);
+    void init();
+    void start();
     shared_ptr<peer> create_peer(const address& addr);
     void async_accept_peer(handler_type handler);
 

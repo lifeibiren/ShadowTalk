@@ -193,7 +193,7 @@ void byte_string::change_buffer_size_to(int size)
 
 void byte_string::adjust_buffer_size(int need)
 {
-    int dst = buf_size_;
+    int dst = buf_size_ == 0 ? 1 : buf_size_;
     while ((dst <<= 1) < need)
         ;
     change_buffer_size_to(dst);
