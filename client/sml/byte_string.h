@@ -20,6 +20,8 @@ public:
         seek_cur = 1,
         seek_end = 2
     };
+    struct seek_out_of_range : exception_base {};
+
     byte_string()
         : buf_(NULL)
         , data_len_(0)
@@ -35,29 +37,24 @@ public:
 
     const char* c_array() const;
     std::string to_std_string() const;
-
-    void write_at(void* buf, int n, int offset);
-    void read_at(void* buf, int n, int offset);
-    void write(void* buf, int n);
-    void read(void* buf, int n);
+    uint64_t write(void* buf, uint64_t n);
+    uint64_t read(void* buf, uint64_t n);
+    uint64_t seek(whence_type whence, int64_t offset) throw(seek_out_of_range);
     void truncate(int n);
 
-    void push_back(void* buf, int n);
-    void push_back(const byte_string& val);
+    uint64_t append(void* buf, int n);
+    uint64_t append(const byte_string& val);
 
-    void pop_back(void* buf = NULL, int n = 1);
-    void extract(void* buf, int start, int length);
-
-    template <typename T> void push_back(T val)
+    template <typename T> uint64_t append(T val)
     {
         boost::endian::endian_buffer<boost::endian::order::big, T, sizeof(T) * 8> buffer(val);
         BOOST_STATIC_ASSERT(sizeof(buffer) == sizeof(T));
-        push_back(&buffer, sizeof(T));
+        append(&buffer, sizeof(T));
     }
 
     char& operator[](int index);
-    int size() const;
-    int capacity() const;
+    uint64_t size() const;
+    uint64_t capacity() const;
     byte_string& operator=(const byte_string& val);
     bool operator==(const byte_string& val) const;
     bool operator!=(const byte_string& val) const;
@@ -67,27 +64,31 @@ public:
     bool operator>=(const byte_string& val) const;
     byte_string& operator+(const byte_string& val);
 
-    template <typename T> byte_string& operator<<(T val)
+    template <typename T> byte_string& operator<<(T val) throw(io_error)
     {
-        write(&val, sizeof(T));
+        if (write(&val, sizeof(T)) != sizeof(T))
+        {
+            throw io_error();
+        }
         return *this;
     }
-    template <typename T> byte_string& operator>>(T val)
+    template <typename T> byte_string& operator>>(T val) throw(io_error)
     {
-        read(&val, sizeof(T));
+        if (read(&val, sizeof(T)) != sizeof(T))
+        {
+            throw io_error();
+        }
         return *this;
     }
-
-    void rewind();
-    void seek(whence_type whence, int offset);
-
 private:
-    void gurantee_space(int size);
-    void change_buffer_size_to(int size);
-    void adjust_buffer_size(int need);
+    size_t gurantee_space(size_t size);
+    size_t _change_buffer_size_to(size_t size);
+    size_t adjust_buffer_size(size_t need);
+
+    void might_update_data_len();
 
     const int ALIGNED_SIZE = 16;
-    char* buf_;
+    std::unique_ptr<char[]> buf_;
     int data_len_;
     int buf_size_;
     int offset_;

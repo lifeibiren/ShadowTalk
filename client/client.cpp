@@ -15,6 +15,18 @@ void peer_handler(shared_ptr<sml::peer> new_peer)
     std::cout<<"there comes a new peer\n";
 }
 
+void timer_handler(asio::deadline_timer &timer, shared_ptr<sml::stream> &s)
+{
+        shared_ptr<std::string> get;
+        //(*s) << str;
+        (*s) >> get;
+        if (get) {
+            std::cout<<*get;
+        }
+    timer.expires_from_now(boost::posix_time::seconds(1));
+    timer.async_wait(bind(timer_handler, ref(timer), ref(s)));
+}
+
 int main(int argc, char** args)
 {
     uint16_t port = atoi(args[1]);
@@ -27,15 +39,12 @@ int main(int argc, char** args)
     shared_ptr<sml::stream> s = q->create_stream(0);
     shared_ptr<std::string> str = make_shared<std::string>("Helloworld\n");
     (*s) << str;
-    boost::thread t(boost::bind(&boost::asio::io_context::run, &sml::sml_io_context));
-//    service->start();
-    while (1) {
-        shared_ptr<std::string> get;
-        (*s) >> get;
-        if (get) {
-            std::cout<<*get;
-        }
-    }
+    //boost::thread t(boost::bind(&boost::asio::io_context::run, &sml::sml_io_context));
+    asio::deadline_timer timer(sml::sml_io_context);
+    timer.expires_from_now(boost::posix_time::seconds(1));
+    timer.async_wait(bind(timer_handler, ref(timer), ref(s)));
+    service->start();
+
     //    sml::encrypt_layer encrypt_layer_(
     //        sml::encrypt_layer::algorithm::AES_128, sptr_string(new std::string((char*)key, 16)));
     //    sptr_string text(new std::string("Hello world\n"));

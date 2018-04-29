@@ -109,6 +109,9 @@ void peer::feed(shared_ptr<std::string> encrypted_msg, shared_ptr<address> addr)
 {
     // decrypt first
     boost::shared_ptr<std::string> msg = encrypt_layer_->decrypt(encrypted_msg);
+
+    log<<"received datagram from peer\n";
+
     // convert to datagram
     shared_ptr<datagram> new_datagram = boost::make_shared<datagram>(msg);
     if (new_datagram == nullptr)
@@ -139,6 +142,8 @@ void peer::feed(shared_ptr<std::string> encrypted_msg, shared_ptr<address> addr)
 }
 void peer::send_datagram(shared_ptr<datagram> msg)
 {
+    log<<"send datagram to peer\n";
+
     // convert to rawbytes
     shared_ptr<std::string> bytes = shared_ptr<std::string>(*msg);
     // encrypt first

@@ -12,6 +12,7 @@ stream::stream(id_type id, send_callback_type callback)
 
 void stream::feed(shared_ptr<datagram> new_datagram)
 {
+    log << "received one datagram from peer:" + std::string(*new_datagram) + "\n";
     switch (new_datagram->type_)
     {
         case datagram::msg_type::abort:
@@ -98,17 +99,19 @@ void stream::send_one_datagram()
 {
     if (send_datagram_queue_.empty())
     {
+        timer.cancel();
         return;
     }
-    send_callback_(send_datagram_queue_.begin()->second);
+    shared_ptr<datagram> to_send = send_datagram_queue_.begin()->second;
+    log << "send one datagram from peer:" + std::string(*to_send) + "\n";
+    send_callback_(to_send);
     timer.expires_from_now(posix_time::seconds(1));
     timer.async_wait(bind(&stream::retransmit, this));
 }
 
 void stream::retransmit()
 {
-    send_callback_(send_datagram_queue_.begin()->second);
-    timer.expires_from_now(posix_time::seconds(1));
-    timer.async_wait(bind(&stream::retransmit, this));
+    log<<"retransmit...\n";
+    send_one_datagram();
 }
 }

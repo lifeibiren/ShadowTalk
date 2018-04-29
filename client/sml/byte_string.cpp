@@ -6,99 +6,110 @@ namespace sml
 byte_string::byte_string(int init_buf_size)
     : byte_string()
 {
-    change_buffer_size_to(init_buf_size);
+    _change_buffer_size_to(init_buf_size);
 }
 
 byte_string::byte_string(std::string& val)
     : byte_string(val.size())
 {
-    memcpy(buf_, val.c_str(), val.size());
+    data_len_ = val.size();
+    gurantee_space(data_len_);
+    memcpy(buf_.get(), val.c_str(), data_len_);
 }
 
 byte_string::byte_string(const byte_string& val)
     : byte_string(val.buf_size_)
 {
     data_len_ = val.data_len_;
-    memcpy(buf_, val.buf_, data_len_);
+    memcpy(buf_.get(), val.buf_.get(), data_len_);
 }
 
 byte_string::byte_string(const void* buf, int len)
     : byte_string(len)
 {
     data_len_ = len;
-    memcpy(buf_, buf, data_len_);
+    memcpy(buf_.get(), buf, data_len_);
 }
 
 byte_string::~byte_string()
 {
-    delete buf_;
 }
 
 const char* byte_string::c_array() const
 {
-    return buf_;
+    return buf_.get();
 }
 
 std::string byte_string::to_std_string() const
 {
-    return std::string(buf_, data_len_);
+    return std::string(buf_.get(), data_len_);
 }
 
 byte_string byte_string::sub_byte_string(int start, int len)
 {
-    return byte_string(buf_ + start, len);
+    return byte_string(buf_.get() + start, len);
 }
 
-void byte_string::write_at(void* buf, int n, int off)
+uint64_t byte_string::write(void* buf, uint64_t n)
 {
-    assert(buf != NULL || n == 0);
-    gurantee_space(off + n);
-    memcpy(buf_ + off, buf, n);
-    if (off + n > data_len_)
-        data_len_ = off + n;
-}
-
-void byte_string::read_at(void* buf, int n, int off)
-{
-    assert((buf != NULL || n == 0) && off + n <= data_len_);
-    memcpy(buf_ + off, buf, n);
-}
-
-void byte_string::write(void* buf, int n)
-{
-    write_at(buf, n, offset_);
-    offset_ += n;
-}
-
-void byte_string::read(void* buf, int n)
-{
-    read_at(buf, n, offset_);
-    offset_ += n;
-}
-
-void byte_string::push_back(void* buf, int n)
-{
-    write_at(buf, n, data_len_);
-}
-
-void byte_string::push_back(const byte_string& val)
-{
-    push_back(val.buf_, val.data_len_);
-}
-
-void byte_string::pop_back(void* buf, int n)
-{
-    if (buf != NULL)
+    if (buf == NULL || n == 0)
     {
-        memcpy(buf, buf_ + data_len_ - n, n);
+        return 0;
     }
-    data_len_ -= n;
+    uint64_t can_write = gurantee_space(offset_ + n) - offset_;
+    n = can_write >= n ? n : can_write;
+    bcopy(buf, buf_.get() + offset_, n);
+    offset_ += n;
+    might_update_data_len();
+    return n;
 }
 
-void byte_string::extract(void* buf, int start, int length)
+uint64_t byte_string::read(void* buf, uint64_t n)
 {
-    assert(start >= 0 && length >= 0 && start + length < data_len_);
-    memcpy(buf, buf_ + start, length);
+    if (buf == NULL || n == 0)
+    {
+        return 0;
+    }
+    uint64_t can_read = data_len_ - offset_;
+    n = can_read >= n  ? n : can_read;
+    bcopy(buf_.get() + offset_, (uint8_t*)buf, n);
+    offset_ += n;
+    return n;
+}
+
+uint64_t byte_string::seek(whence_type whence, int64_t offset) throw(seek_out_of_range)
+{
+    switch (whence)
+    {
+    case whence_type::seek_cur:
+        offset_ += offset;
+        break;
+    case whence_type::seek_end:
+        offset_ = data_len_ + offset;
+        break;
+    case whence_type::seek_set:
+        offset_ = offset;
+        break;
+    default:
+        return -1;
+        break;
+    }
+    if (offset_ > data_len_)
+    {
+        throw seek_out_of_range();
+    }
+    return offset_;
+}
+
+uint64_t byte_string::append(void* buf, int n)
+{
+    (void)seek(whence_type::seek_end, 0);
+    return write(buf, n);
+}
+
+uint64_t byte_string::append(const byte_string& val)
+{
+    return append(val.buf_.get(), val.data_len_);
 }
 
 char& byte_string::operator[](int index)
@@ -113,21 +124,21 @@ char& byte_string::operator[](int index)
     }
 }
 
-int byte_string::size() const
+uint64_t byte_string::size() const
 {
     return data_len_;
 }
 
-int byte_string::capacity() const
+uint64_t byte_string::capacity() const
 {
     return buf_size_;
 }
 
 byte_string& byte_string::operator=(const byte_string& val)
 {
-    change_buffer_size_to(val.buf_size_);
+    _change_buffer_size_to(val.buf_size_);
     data_len_ = val.data_len_;
-    memcpy(buf_, val.buf_, val.data_len_);
+    memcpy(buf_.get(), val.buf_.get(), val.data_len_);
     return *this;
 }
 
@@ -135,7 +146,7 @@ bool byte_string::operator==(const byte_string& val) const
 {
     if (data_len_ == val.data_len_)
     {
-        return memcmp(buf_, val.buf_, data_len_) == 0;
+        return memcmp(buf_.get(), val.buf_.get(), data_len_) == 0;
     }
     else
     {
@@ -151,7 +162,7 @@ bool byte_string::operator!=(const byte_string& val) const
 bool byte_string::operator<(const byte_string& val) const
 {
     int min = utils::min(data_len_, val.data_len_);
-    return memcmp(buf_, val.buf_, min) < 0;
+    return memcmp(buf_.get(), val.buf_.get(), min) < 0;
 }
 
 bool byte_string::operator>(const byte_string& val) const
@@ -171,39 +182,57 @@ bool byte_string::operator>=(const byte_string& val) const
 
 byte_string& byte_string::operator+(const byte_string& val)
 {
-    push_back(val);
+    append(val);
     return *this;
 }
 
-void byte_string::change_buffer_size_to(int size)
+size_t byte_string::_change_buffer_size_to(size_t size)
 {
-    assert(size >= 0);
+    size = size >= 1 ? ((size - 1) & ~(ALIGNED_SIZE - 1)) + ALIGNED_SIZE : 0;
     if (size == 0)
     {
-        return;
+        buf_ = NULL;
+        buf_size_ = 0;
+        return 0;
     }
-    size = ((size - 1) & ~(ALIGNED_SIZE - 1)) + ALIGNED_SIZE;
-    char* new_buf = new char[size];
+    std::unique_ptr<char []> new_buf(new char[size]);
+    if (new_buf == nullptr)
+    {
+        // failed to new
+        return buf_size_;
+    }
     int min_size = utils::min(size, data_len_);
-    memcpy(new_buf, buf_, min_size);
-    delete buf_;
-    buf_ = new_buf;
+    memcpy(new_buf.get(), buf_.get(), min_size);
+    buf_ = boost::move(new_buf);
     buf_size_ = size;
+    return buf_size_;
 }
 
-void byte_string::adjust_buffer_size(int need)
+size_t byte_string::adjust_buffer_size(size_t need)
 {
-    int dst = buf_size_ == 0 ? 1 : buf_size_;
-    while ((dst <<= 1) < need)
-        ;
-    change_buffer_size_to(dst);
+    int dst = 1;
+    while (dst < need)
+    {
+        dst <<= 1;
+        if (dst == 0)
+        {
+            return buf_size_;
+        }
+    }
+    return _change_buffer_size_to(dst);
 }
 
-void byte_string::gurantee_space(int size)
+size_t byte_string::gurantee_space(size_t size)
 {
     if (size > buf_size_)
     {
-        adjust_buffer_size(size);
+        return adjust_buffer_size(size);
     }
+    return buf_size_;
+}
+
+void byte_string::might_update_data_len()
+{
+    data_len_ = offset_ > data_len_ ? offset_ : data_len_;
 }
 }

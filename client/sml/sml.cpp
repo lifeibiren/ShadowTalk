@@ -3,6 +3,7 @@
 namespace sml
 {
 asio::io_context sml_io_context;
+logger log;
 
 service::service(uint16_t port)
     : port_(port)

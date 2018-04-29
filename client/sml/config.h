@@ -14,7 +14,7 @@
 #include <boost/function.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_array.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/smart_ptr.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/thread.hpp>
 
@@ -25,16 +25,30 @@ using boost::make_shared;
 typedef shared_ptr<std::string> sptr_string;
 typedef uint8_t byte;
 
+#include "logger.h"
 namespace sml
 {
 extern asio::io_context sml_io_context;
+extern logger log;
 class peer;
 class udp_layer;
 class stream;
 class service;
 class encrypt_layer;
 class address;
+class logger;
 }
+
+
+template<typename ... Args>
+std::string string_format(const std::string &format, Args ... args)
+{
+    size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1;
+    std::unique_ptr<char[]> buf(new char[size]);
+    snprintf(buf.get(), size, format.c_str(), args ...);
+    return std::string(buf.get(), buf.get() + size - 1);
+}
+
 #include "exception.h"
 #include "utils.h"
 
