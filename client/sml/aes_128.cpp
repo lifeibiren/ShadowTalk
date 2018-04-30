@@ -26,25 +26,23 @@ void aes_128::set_key(sptr_string key)
 }
 sptr_string aes_128::encrypt(sptr_string data)
 {
-//    rnd.GenerateBlock(iv_, block_size_);
-//    int cipher_length = data->size() + block_size_;
-//    shared_array<byte> cipher = shared_array<byte>(new byte[cipher_length]);
-//    memcpy(cipher.get(), iv_, block_size_);
-//    cfbEncryption.ProcessData(cipher.get() + block_size_, (const byte*)data->c_str(), data->size());
-//    return make_shared<std::string>((char*)cipher.get(), cipher_length);
-    return data;
+    rnd.GenerateBlock(iv_, block_size_);
+    int cipher_length = data->size() + block_size_;
+    shared_array<byte> cipher = shared_array<byte>(new byte[cipher_length]);
+    memcpy(cipher.get(), iv_, block_size_);
+    cfbEncryption.ProcessData(cipher.get() + block_size_, (const byte*)data->c_str(), data->size());
+    return make_shared<std::string>((char*)cipher.get(), cipher_length);
 }
 sptr_string aes_128::decrypt(sptr_string data)
 {
-//    int plaintext_length = data->size() - block_size_;
-//    if (plaintext_length <= 0)
-//    {
-//        throw invalid_data_error();
-//    }
-//    memcpy(iv_, data->c_str(), block_size_);
-//    shared_array<byte> cipher = shared_array<byte>(new byte[plaintext_length]);
-//    cfbDecryption.ProcessData(cipher.get(), (const byte*)data->c_str() + block_size_, plaintext_length);
-//    return make_shared<std::string>((char*)cipher.get(), plaintext_length);
-    return data;
+    int plaintext_length = data->size() - block_size_;
+    if (plaintext_length <= 0)
+    {
+        throw invalid_data_error();
+    }
+    memcpy(iv_, data->c_str(), block_size_);
+    shared_array<byte> cipher = shared_array<byte>(new byte[plaintext_length]);
+    cfbDecryption.ProcessData(cipher.get(), (const byte*)data->c_str() + block_size_, plaintext_length);
+    return make_shared<std::string>((char*)cipher.get(), plaintext_length);
 }
 }

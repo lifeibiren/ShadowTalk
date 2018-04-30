@@ -19,9 +19,7 @@ void udp_layer::handle_receive(const boost::system::error_code &error, std::size
 {
     if (!error || error == boost::asio::error::message_size)
     {
-        log<<"received udp datagram of " + to_string(bytes_transferred) + "\n";
         shared_ptr<std::string> received_message(new std::string(recv_buffer_.c_array(), bytes_transferred));
-        std::cout<<*received_message<<std::endl;
         /*
          * distribute udp datagram here
          */
@@ -41,12 +39,6 @@ void udp_layer::handle_receive(const boost::system::error_code &error, std::size
 
 void udp_layer::send_to(boost::shared_ptr<std::string> msg, boost::shared_ptr<address> addr, handler_type handler)
 {
-    log<<"send udp datagram of " + to_string(msg->size()) + "\n";
-    for (int i = 0; i < msg->size(); i ++ )
-    {
-        printf("%02x ", uint8_t((*msg)[i]));
-    }
-    std::cout<<*msg<<std::endl;
     boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(addr->ip()), addr->port());
     socket_.async_send_to(boost::asio::buffer(*msg), endpoint,
         boost::bind(&udp_layer::handle_send, this, boost::asio::placeholders::error, msg, addr, handler));
@@ -67,7 +59,6 @@ void udp_layer::handle_send(const boost::system::error_code& error, shared_ptr<s
 {
     if (!error)
     {
-        log<<"send udp datagram\n";
         handler(message, addr);
     }
 }

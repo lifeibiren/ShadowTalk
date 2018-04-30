@@ -11,9 +11,6 @@ datagram::datagram(shared_ptr<std::string> bytes)
     b_str >> offset_;
     b_str >> length_;
     b_str >> data_;
-
-    log<<"bytes to datagram\n";
-    log<<*bytes;
 }
 datagram::operator shared_ptr<std::string>() const
 {
@@ -23,8 +20,6 @@ datagram::operator shared_ptr<std::string>() const
     b_str << offset_;
     b_str << length_;
     b_str << data_;
-    log<<"datagram to bytes\n";
-    log<<b_str.to_std_string();
     return shared_ptr<std::string>(new std::string(b_str.to_std_string()));
 }
 datagram::operator std::string() const

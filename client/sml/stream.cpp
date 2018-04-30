@@ -8,11 +8,12 @@ stream::stream(id_type id, send_callback_type callback)
     , timer(sml_io_context)
     , send_callback_(callback)
     , recv_data_(make_shared<std::string>())
+    , send_offset_(0), recv_offset_(0)
+    , send_length_(0), recv_length_(0)
 {}
 
 void stream::feed(shared_ptr<datagram> new_datagram)
 {
-    log << "received one datagram from peer:" + std::string(*new_datagram) + "\n";
     switch (new_datagram->type_)
     {
         case datagram::msg_type::abort:
@@ -23,6 +24,7 @@ void stream::feed(shared_ptr<datagram> new_datagram)
         }
         case datagram::msg_type::acknowledge:
         {
+            // update offset
             send_offset_ = new_datagram->offset_;
             send_one_datagram();
             break;
@@ -33,30 +35,20 @@ void stream::feed(shared_ptr<datagram> new_datagram)
     }
 
     datagram_map_type::iterator it = recv_datagram_queue_.begin();
-    if (it != recv_datagram_queue_.end())
+    if (it != recv_datagram_queue_.end() &&
+            it->first == recv_offset_)
     {
         // drain
-        while (it->first == recv_offset_)
+        do
         {
             (*recv_data_) += it->second->data_;
-            recv_offset_ += it->second->offset_;
+            recv_offset_ += it->second->length_;
             it = recv_datagram_queue_.erase(it);
-        }
-        shared_ptr<datagram> ack = make_shared<datagram>();
-        ack->id_ = this->id_;
-        ack->offset_ = this->recv_offset_;
-        // send ack
-        send_callback_(ack);
-    }
+        } while (it != recv_datagram_queue_.end() &&
+                 it->first == recv_offset_);
 
-    it = send_datagram_queue_.begin();
-    if (it != send_datagram_queue_.end())
-    {
-        // clean acknowledged datagrams
-        while (it->first < send_offset_)
-        {
-            it = send_datagram_queue_.erase(it);
-        }
+        // send ack
+        send_ack();
     }
 }
 
@@ -97,13 +89,25 @@ stream& stream::operator<<(shared_ptr<std::string> &data)
 
 void stream::send_one_datagram()
 {
+    timer.cancel();
+    // remove datagrams already sent
+    datagram_map_type::iterator it = send_datagram_queue_.begin();
+    if (it != send_datagram_queue_.end() &&
+            it->first < send_offset_)
+    {
+        do
+        {
+            it = send_datagram_queue_.erase(it);
+        } while (it != send_datagram_queue_.end() &&
+                 it->first < send_offset_);
+    }
+    // if all are sent
     if (send_datagram_queue_.empty())
     {
-        timer.cancel();
         return;
     }
+
     shared_ptr<datagram> to_send = send_datagram_queue_.begin()->second;
-    log << "send one datagram from peer:" + std::string(*to_send) + "\n";
     send_callback_(to_send);
     timer.expires_from_now(posix_time::seconds(1));
     timer.async_wait(bind(&stream::retransmit, this));
@@ -111,7 +115,15 @@ void stream::send_one_datagram()
 
 void stream::retransmit()
 {
-    log<<"retransmit...\n";
     send_one_datagram();
+}
+
+void stream::send_ack()
+{
+    shared_ptr<datagram> ack = make_shared<datagram>();
+    ack->type_ = datagram::msg_type::acknowledge;
+    ack->id_ = this->id_;
+    ack->offset_ = this->recv_offset_;
+    send_callback_(ack);
 }
 }

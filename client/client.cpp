@@ -20,8 +20,8 @@ void timer_handler(asio::deadline_timer &timer, shared_ptr<sml::stream> &s)
         shared_ptr<std::string> get;
         //(*s) << str;
         (*s) >> get;
-        if (get) {
-            std::cout<<*get;
+        if ((*get) != "") {
+            std::cout<< *get<<std::endl;
         }
     timer.expires_from_now(boost::posix_time::seconds(1));
     timer.async_wait(bind(timer_handler, ref(timer), ref(s)));

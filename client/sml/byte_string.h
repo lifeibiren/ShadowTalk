@@ -37,7 +37,9 @@ public:
 
     const char* c_array() const;
     std::string to_std_string() const;
-    uint64_t write(void* buf, uint64_t n);
+    uint64_t can_write() const;
+    uint64_t write(const void* buf, uint64_t n);
+    uint64_t can_read() const;
     uint64_t read(void* buf, uint64_t n);
     uint64_t seek(whence_type whence, int64_t offset) throw(seek_out_of_range);
     void truncate(int n);
@@ -64,7 +66,8 @@ public:
     bool operator>=(const byte_string& val) const;
     byte_string& operator+(const byte_string& val);
 
-    template <typename T> byte_string& operator<<(T val) throw(io_error)
+    template <typename T>
+    byte_string &operator<<(const T &val) throw(io_error)
     {
         if (write(&val, sizeof(T)) != sizeof(T))
         {
@@ -72,7 +75,9 @@ public:
         }
         return *this;
     }
-    template <typename T> byte_string& operator>>(T val) throw(io_error)
+
+    template <typename T>
+    byte_string &operator>>(T &val) throw(io_error)
     {
         if (read(&val, sizeof(T)) != sizeof(T))
         {

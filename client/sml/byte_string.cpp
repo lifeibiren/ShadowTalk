@@ -50,18 +50,29 @@ byte_string byte_string::sub_byte_string(int start, int len)
     return byte_string(buf_.get() + start, len);
 }
 
-uint64_t byte_string::write(void* buf, uint64_t n)
+uint64_t byte_string::can_write() const
+{
+    assert(buf_size_ >= offset_);
+    return buf_size_ - offset_;
+}
+
+uint64_t byte_string::write(const void* buf, uint64_t n)
 {
     if (buf == NULL || n == 0)
     {
         return 0;
     }
-    uint64_t can_write = gurantee_space(offset_ + n) - offset_;
-    n = can_write >= n ? n : can_write;
+    (void)gurantee_space(offset_ + n);
+    n = can_write() >= n ? n : can_write();
     bcopy(buf, buf_.get() + offset_, n);
     offset_ += n;
     might_update_data_len();
     return n;
+}
+
+uint64_t byte_string::can_read() const
+{
+    return data_len_ - offset_;
 }
 
 uint64_t byte_string::read(void* buf, uint64_t n)
@@ -70,8 +81,7 @@ uint64_t byte_string::read(void* buf, uint64_t n)
     {
         return 0;
     }
-    uint64_t can_read = data_len_ - offset_;
-    n = can_read >= n  ? n : can_read;
+    n = can_read() >= n  ? n : can_read();
     bcopy(buf_.get() + offset_, (uint8_t*)buf, n);
     offset_ += n;
     return n;
@@ -234,5 +244,28 @@ size_t byte_string::gurantee_space(size_t size)
 void byte_string::might_update_data_len()
 {
     data_len_ = offset_ > data_len_ ? offset_ : data_len_;
+}
+
+template <>
+byte_string &byte_string::operator<<(const std::string &val) throw(io_error)
+{
+    if (write(val.c_str(), val.size()) != val.size())
+    {
+        throw io_error();
+    }
+    return *this;
+}
+
+template <>
+byte_string &byte_string::operator>>(std::string &val) throw(io_error)
+{
+    uint64_t length = can_read();
+    std::unique_ptr<char[]> buf(new char[length]);
+    if (read(buf.get(), length) != length)
+    {
+        throw io_error();
+    }
+    val = std::string(buf.get(), length);
+    return *this;
 }
 }
