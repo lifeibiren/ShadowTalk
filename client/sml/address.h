@@ -16,6 +16,7 @@ public:
     void set_port(uint16_t port);
     bool operator==(const address& val) const;
 
+    size_t hash() const;
 private:
     std::string ip_addr_;
     uint16_t port_;

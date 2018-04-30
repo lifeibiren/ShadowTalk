@@ -33,6 +33,9 @@ void udp_layer::handle_receive(const boost::system::error_code &error, std::size
         {
             (*it)(received_message, addr);
         }
+
+        peer_map_type::iterator peer_it = peer_map_.find(*addr);
+
         start_receive();
     }
 }

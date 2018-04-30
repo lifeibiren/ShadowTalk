@@ -1,10 +1,10 @@
-#ifndef TRANSPORT_LAYER_H
-#define TRANSPORT_LAYER_H
+#ifndef PEER_H
+#define PEER_H
 
 #include "config.h"
 #include "encrypt_layer.h"
 #include "message.h"
-#include "message_piece.h"
+#include "peer.h"
 #include "stream.h"
 #include "udp_layer.h"
 
@@ -24,6 +24,8 @@ public:
     std::vector<id_type> new_stream_id_vec() const;
 
     void feed(shared_ptr<std::string> msg, shared_ptr<address> addr);
+
+    size_t hash() const;
 
 private:
     void packet_handler(shared_ptr<std::string> packet, shared_ptr<address> addr);

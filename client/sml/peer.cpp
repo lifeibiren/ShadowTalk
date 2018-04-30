@@ -1,4 +1,4 @@
-#include "transport_layer.h"
+#include "peer.h"
 
 namespace sml
 {
@@ -146,5 +146,10 @@ void peer::send_datagram(shared_ptr<datagram> msg)
     // TODO: add handler
     udp_layer_.send_to(
         encrypted, make_shared<address>(addr_), [](shared_ptr<std::string> msg, shared_ptr<address> addr) {});
+}
+
+size_t peer::hash() const
+{
+    return addr_.hash();
 }
 }

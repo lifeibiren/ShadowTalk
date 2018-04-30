@@ -2,7 +2,7 @@
 #define STREAM_H
 
 #include "config.h"
-#include "message_piece.h"
+#include "datagram.h"
 
 namespace sml
 {

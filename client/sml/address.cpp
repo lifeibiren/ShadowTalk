@@ -38,4 +38,11 @@ bool address::operator==(const address& val) const
         return false;
     }
 }
+size_t address::hash() const
+{
+    std::size_t seed = 0;
+    boost::hash_combine(seed, ip_addr_);
+    boost::hash_combine(seed, port_);
+    return seed;
+}
 }

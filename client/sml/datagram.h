@@ -1,8 +1,7 @@
-#ifndef MESSAGE_PIECE_H
-#define MESSAGE_PIECE_H
+#ifndef DATAGRAM_H_
+#define DATAGRAM_H_
 
 #include "config.h"
-#include "message.h"
 
 namespace sml
 {
