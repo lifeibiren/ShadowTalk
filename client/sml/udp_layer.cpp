@@ -2,8 +2,9 @@
 
 namespace sml
 {
-udp_layer::udp_layer(uint16_t port)
-    : socket_(sml_io_context, asio::ip::udp::endpoint(asio::ip::udp::v4(), port))
+udp_layer::udp_layer(asio::io_context &io_context, uint16_t port)
+    : io_context_(io_context)
+    , socket_(io_context_, asio::ip::udp::endpoint(asio::ip::udp::v4(), port))
 {
     start_receive();
 }
@@ -21,7 +22,7 @@ void udp_layer::handle_receive(const boost::system::error_code &error, std::size
     {
         shared_ptr<std::string> received_message(new std::string(recv_buffer_.c_array(), bytes_transferred));
         /*
-         * distribute udp datagram here
+         * distribute udp datagram to handlers
          */
         shared_ptr<address> addr = make_shared<address>(remote_endpoint_);
         auto it = handler_map_.find(addr);
@@ -34,7 +35,18 @@ void udp_layer::handle_receive(const boost::system::error_code &error, std::size
             (*it)(received_message, addr);
         }
 
+        /*
+         * feed peers
+         */
         peer_map_type::iterator peer_it = peer_map_.find(*addr);
+        if (peer_it == peer_map_.end())
+        {
+            peer_map_.insert(peer_map_type::value_type(*addr, make_shared<peer>(io_context_, *this, *addr)));
+            peer_it = peer_map_.find(*addr);
+            // send new peer message
+            output_ring.put(make_shared<new_peer>(*addr));
+        }
+        peer_it->second->feed(received_message);
 
         start_receive();
     }
@@ -55,6 +67,34 @@ void udp_layer::register_handler(handler_type handler, shared_ptr<address> addr_
 void udp_layer::register_handler(handler_type handler)
 {
     default_handler_list_.push_back(handler);
+}
+
+void udp_layer::add_peer(const address &addr)
+{
+    peer_map_.insert(peer_map_type::value_type(addr, make_shared<peer>(io_context_, *this, addr)));
+}
+
+void udp_layer::del_peer(const address &addr)
+{
+    size_t ret = peer_map_.erase(addr);
+    if (ret < 1)
+    {
+        output_ring.put(make_shared<error_message>("no such peer\n"));
+    }
+    else if (ret > 0)
+    {
+        throw unknown_error();
+    }
+}
+
+shared_ptr<peer> udp_layer::get_peer(const address &addr)
+{
+    peer_map_type::iterator it = peer_map_.find(addr);
+    if (it == peer_map_.end())
+    {
+        return nullptr;
+    }
+    return it->second;
 }
 
 void udp_layer::handle_send(const boost::system::error_code& error, shared_ptr<std::string> message,

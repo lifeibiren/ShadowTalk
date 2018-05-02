@@ -87,7 +87,7 @@ uint64_t byte_string::read(void* buf, uint64_t n)
     return n;
 }
 
-uint64_t byte_string::seek(whence_type whence, int64_t offset) throw(seek_out_of_range)
+uint64_t byte_string::seek(whence_type whence, int64_t offset)
 {
     switch (whence)
     {
@@ -247,7 +247,7 @@ void byte_string::might_update_data_len()
 }
 
 template <>
-byte_string &byte_string::operator<<(const std::string &val) throw(io_error)
+byte_string &byte_string::operator<<(const std::string &val)
 {
     if (write(val.c_str(), val.size()) != val.size())
     {
@@ -257,7 +257,7 @@ byte_string &byte_string::operator<<(const std::string &val) throw(io_error)
 }
 
 template <>
-byte_string &byte_string::operator>>(std::string &val) throw(io_error)
+byte_string &byte_string::operator>>(std::string &val)
 {
     uint64_t length = can_read();
     std::unique_ptr<char[]> buf(new char[length]);

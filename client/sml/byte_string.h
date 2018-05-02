@@ -41,7 +41,7 @@ public:
     uint64_t write(const void* buf, uint64_t n);
     uint64_t can_read() const;
     uint64_t read(void* buf, uint64_t n);
-    uint64_t seek(whence_type whence, int64_t offset) throw(seek_out_of_range);
+    uint64_t seek(whence_type whence, int64_t offset);
     void truncate(int n);
 
     uint64_t append(void* buf, int n);
@@ -67,7 +67,7 @@ public:
     byte_string& operator+(const byte_string& val);
 
     template <typename T>
-    byte_string &operator<<(const T &val) throw(io_error)
+    byte_string &operator<<(const T &val)
     {
         if (write(&val, sizeof(T)) != sizeof(T))
         {
@@ -77,7 +77,7 @@ public:
     }
 
     template <typename T>
-    byte_string &operator>>(T &val) throw(io_error)
+    byte_string &operator>>(T &val)
     {
         if (read(&val, sizeof(T)) != sizeof(T))
         {

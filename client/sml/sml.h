@@ -38,21 +38,22 @@
 
 namespace sml
 {
-class service : public enable_shared_from_this<service>
+class service
 {
 public:
     typedef function<void(shared_ptr<peer>)> handler_type;
 
-    service(uint16_t port);
-    void init();
+    service(asio::io_context &io_context, uint16_t port);
     void start();
     shared_ptr<peer> create_peer(const address& addr);
     void async_accept_peer(handler_type handler);
 
-    std::list<message> query();
-    void post(std::list<message>);
+    shared_ptr<message> query();
+    void post(shared_ptr<message>);
 private:
+    void msg_handler();
     void new_peer_handler(shared_ptr<std::string> msg, shared_ptr<address> addr);
+    asio::io_context &io_context_;
     uint16_t port_;
     udp_layer udp_layer_;
     std::vector<handler_type> handler_list_;

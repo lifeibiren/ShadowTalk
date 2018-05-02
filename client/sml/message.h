@@ -6,6 +6,7 @@
 #include "datagram.h"
 #include "byte_string.h"
 
+
 namespace sml
 {
 class message
@@ -20,63 +21,83 @@ public:
         del_stream,
         new_stream,
         send_data,
-        recv_data
+        recv_data,
+        error
     };
 
+    message() {}
     message(msg_type type);
-    virtual void operator()() = 0;
     virtual ~message();
 protected:
     msg_type type_;
 };
 
-class peer_control : public message
+class control_message
 {
 public:
-    peer_control(msg_type type, address addr);
+    virtual void operator()(udp_layer &a_udp_layer) = 0;
+};
+
+class info_message
+{
+public:
+    info_message(const std::string &info);
+private:
+    const std::string info_;
+};
+
+class peer_message : public message
+{
+public:
+    peer_message(msg_type type, address addr);
 protected:
     address addr_;
 };
 
-class add_peer : public peer_control
+class add_peer: public peer_message, public control_message
 {
 public:
     add_peer(address addr);
+    virtual void operator()(udp_layer &a_udp_layer);
 };
 
-class del_peer: public peer_control
+class del_peer: public peer_message, public control_message
 {
 public:
     del_peer(address addr);
+    void operator()(udp_layer &a_udp_layer);
 };
 
-class new_peer: public peer_control
+class new_peer: public peer_message
 {
 public:
     new_peer(address addr);
+    void operator()(udp_layer &a_udp_layer);
 };
 
-class stream_control: public message
+class stream_message : public message
 {
 public:
-    stream_control(msg_type type, address addr, datagram::id_type id);
+    stream_message(msg_type type, address addr, datagram::id_type id);
 protected:
     address addr_;
     datagram::id_type id_;
 };
 
-class add_stream: public stream_control
+class add_stream: public stream_message, public control_message
 {
 public:
     add_stream(address addr, datagram::id_type id);
+    void operator()(udp_layer &a_udp_layer);
 };
-class del_stream: public stream_control
+class del_stream: public stream_message, public control_message
 {
 public:
     del_stream(address addr, datagram::id_type id);
+    void operator()(udp_layer &a_udp_layer);
 };
 
-class new_stream: public stream_control
+class new_stream: public stream_message
 {
 public:
     new_stream(address addr, datagram::id_type id);
@@ -96,12 +117,22 @@ class recv_data: public data_message
 {
 public:
     recv_data(address addr, datagram::id_type id, const std::string &data);
+    operator std::string();
 };
 
-class send_data: public data_message
+class send_data: public data_message, public control_message
 {
 public:
     send_data(address addr, datagram::id_type id, const std::string &data);
+    void operator()(udp_layer &a_udp_layer);
+};
+
+class error_message: public message, public info_message
+{
+public:
+    error_message(const std::string &info);
+protected:
+    std::string info_;
 };
 }
 #endif // MESSAGE_H

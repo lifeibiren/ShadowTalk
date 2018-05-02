@@ -2,28 +2,25 @@
 
 namespace sml
 {
-asio::io_context sml_io_context;
 logger log;
+ring input_ring, output_ring;
 
-service::service(uint16_t port)
-    : port_(port)
-    , udp_layer_(port)
+service::service(asio::io_context &io_context, uint16_t port)
+    : io_context_(io_context)
+    , port_(port)
+    , udp_layer_(io_context_, port)
 {
-}
-
-void service::init()
-{
-    udp_layer_.register_handler(bind(&service::new_peer_handler, shared_from_this(), _1, _2));
 }
 
 void service::start()
 {
-    sml_io_context.run();
+    thread t(bind(&asio::io_context::run, &io_context_));
+//    io_context_.run();
 }
 
 shared_ptr<peer> service::create_peer(const address& addr)
 {
-    return make_shared<peer>(udp_layer_, addr);
+    return make_shared<peer>(io_context_, udp_layer_, addr);
 }
 
 void service::async_accept_peer(handler_type handler)
@@ -40,10 +37,31 @@ void service::async_accept_peer(handler_type handler)
     }
 }
 
+shared_ptr<message> service::query()
+{
+    return output_ring.get();
+}
+
+void service::post(shared_ptr<message> msg)
+{
+    input_ring.put(msg);
+    asio::post(io_context_, bind(&service::msg_handler, this));
+}
+
+void service::msg_handler()
+{
+    shared_ptr<message> ptr;
+    while ((ptr = input_ring.get()) != nullptr)
+    {
+        control_message *ctl_ptr = dynamic_cast<control_message *>(ptr.get());
+        ctl_ptr->operator ()(udp_layer_);
+    }
+}
+
 void service::new_peer_handler(shared_ptr<std::string> msg, shared_ptr<address> addr)
 {
-    shared_ptr<peer> new_peer = make_shared<peer>(udp_layer_, *addr);
-    new_peer->feed(msg, addr);
+    shared_ptr<peer> new_peer = make_shared<peer>(io_context_, udp_layer_, *addr);
+    new_peer->feed(msg);
 
     if (!handler_list_.empty())
     {

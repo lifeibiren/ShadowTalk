@@ -24,8 +24,6 @@ private:
     const static size_t key_length_ = CryptoPP::AES::DEFAULT_KEYLENGTH;
     uint8_t iv_[block_size_];
     uint8_t key_[key_length_];
-    CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption cfbEncryption;
-    CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption cfbDecryption;
     CryptoPP::AutoSeededRandomPool rnd;
 };
 }

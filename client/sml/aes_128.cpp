@@ -3,8 +3,6 @@
 namespace sml
 {
 aes_128::aes_128(sptr_string& key)
-    : cfbEncryption(key_, CryptoPP::AES::DEFAULT_KEYLENGTH, iv_)
-    , cfbDecryption(key_, CryptoPP::AES::DEFAULT_KEYLENGTH, iv_)
 {
     if (key == nullptr)
     {
@@ -30,6 +28,7 @@ sptr_string aes_128::encrypt(sptr_string data)
     int cipher_length = data->size() + block_size_;
     shared_array<byte> cipher = shared_array<byte>(new byte[cipher_length]);
     memcpy(cipher.get(), iv_, block_size_);
+    CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption cfbEncryption(key_, CryptoPP::AES::DEFAULT_KEYLENGTH, iv_);
     cfbEncryption.ProcessData(cipher.get() + block_size_, (const byte*)data->c_str(), data->size());
     return make_shared<std::string>((char*)cipher.get(), cipher_length);
 }
@@ -42,6 +41,7 @@ sptr_string aes_128::decrypt(sptr_string data)
     }
     memcpy(iv_, data->c_str(), block_size_);
     shared_array<byte> cipher = shared_array<byte>(new byte[plaintext_length]);
+    CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption cfbDecryption(key_, CryptoPP::AES::DEFAULT_KEYLENGTH, iv_);
     cfbDecryption.ProcessData(cipher.get(), (const byte*)data->c_str() + block_size_, plaintext_length);
     return make_shared<std::string>((char*)cipher.get(), plaintext_length);
 }

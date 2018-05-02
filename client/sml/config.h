@@ -13,6 +13,7 @@
 #include <boost/endian/endian.hpp>
 #include <boost/function.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/make_unique.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/unordered_map.hpp>
@@ -26,10 +27,11 @@ typedef shared_ptr<std::string> sptr_string;
 typedef uint8_t byte;
 
 #include "logger.h"
+#include "ring.h"
 namespace sml
 {
-extern asio::io_context sml_io_context;
 extern logger log;
+class ring;
 class peer;
 class udp_layer;
 class stream;
@@ -37,6 +39,8 @@ class service;
 class encrypt_layer;
 class address;
 class logger;
+
+extern ring input_ring, output_ring;
 }
 
 

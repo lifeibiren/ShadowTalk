@@ -19,31 +19,51 @@ void timer_handler(asio::deadline_timer &timer, shared_ptr<sml::stream> &s)
 {
         shared_ptr<std::string> get;
         //(*s) << str;
-        (*s) >> get;
-        if ((*get) != "") {
-            std::cout<< *get<<std::endl;
-        }
+//        (*s) >> get;
+//        if ((*get) != "") {
+//            std::cout<< *get<<std::endl;
+//        }
     timer.expires_from_now(boost::posix_time::seconds(1));
     timer.async_wait(bind(timer_handler, ref(timer), ref(s)));
 }
 
+asio::io_context io_context;
 int main(int argc, char** args)
 {
     uint16_t port = atoi(args[1]);
-
-    shared_ptr<sml::service> service = make_shared<sml::service>(port);
-    service->init();
-    service->async_accept_peer(peer_handler);
+    sml::service service(io_context, port);
+    service.start();
     sml::address addr("127.0.0.1", port ^ 1);
-    shared_ptr<sml::peer> q = service->create_peer(addr);
-    shared_ptr<sml::stream> s = q->create_stream(0);
-    shared_ptr<std::string> str = make_shared<std::string>("Helloworld\n");
-    (*s) << str;
-    //boost::thread t(boost::bind(&boost::asio::io_context::run, &sml::sml_io_context));
-    asio::deadline_timer timer(sml::sml_io_context);
-    timer.expires_from_now(boost::posix_time::seconds(1));
-    timer.async_wait(bind(timer_handler, ref(timer), ref(s)));
-    service->start();
+    service.post(make_shared<sml::add_peer>(addr));
+    service.post(make_shared<sml::add_stream>(addr, 0));
+    service.post(make_shared<sml::send_data>(addr, 0, "Hello World\n"));
+
+    while (1)
+    {
+        shared_ptr<sml::message> ptr = service.query();
+        if (ptr)
+        {
+            std::cout<<typeid(*ptr).name()<<std::endl;
+            sml::recv_data *data = dynamic_cast<sml::recv_data *>(ptr.get());
+            if (data)
+            {
+                std::cout<<"received data:"<<std::string(*data)<<std::endl;
+            }
+        }
+    }
+//    shared_ptr<sml::service> service = make_shared<sml::service>(io_context, port);
+//    service->init();
+//    service->async_accept_peer(peer_handler);
+//    sml::address addr("127.0.0.1", port ^ 1);
+//    shared_ptr<sml::peer> q = service->create_peer(addr);
+//    shared_ptr<sml::stream> s = q->create_stream(0);
+//    shared_ptr<std::string> str = make_shared<std::string>("Helloworld\n");
+//    (*s) << str;
+//    //boost::thread t(boost::bind(&boost::asio::io_context::run, &sml::sml_io_context));
+//    asio::deadline_timer timer(io_context);
+//    timer.expires_from_now(boost::posix_time::seconds(1));
+//    timer.async_wait(bind(timer_handler, ref(timer), ref(s)));
+//    service->start();
 
     //    sml::encrypt_layer encrypt_layer_(
     //        sml::encrypt_layer::algorithm::AES_128, sptr_string(new std::string((char*)key, 16)));
