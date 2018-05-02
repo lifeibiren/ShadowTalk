@@ -2,14 +2,14 @@
 
 namespace sml
 {
-peer::peer(asio::io_context &io_context, udp_layer& udp_layer, const address& addr)
+peer::peer(asio::io_context& io_context, udp_layer& udp_layer, const address& addr)
     : io_context_(io_context)
     , current_state_(0)
     , udp_layer_(udp_layer)
     , addr_(addr)
 {
-    encrypt_layer_ = boost::make_shared<encrypt_layer>(encrypt_layer::algorithm::AES_128,
-                                                       boost::make_shared<std::string>("1234567890123456"));
+    encrypt_layer_ = boost::make_shared<encrypt_layer>(
+        encrypt_layer::algorithm::AES_128, boost::make_shared<std::string>("1234567890123456"));
 }
 
 shared_ptr<stream> peer::add_stream(id_type id)
@@ -72,7 +72,7 @@ std::vector<peer::id_type> peer::new_stream_id_vec() const
     return new_stream_id_;
 }
 
-//void peer::packet_handler(shared_ptr<std::string> packet, shared_ptr<address> addr)
+// void peer::packet_handler(shared_ptr<std::string> packet, shared_ptr<address> addr)
 //{
 //    if (current_state_ == established)
 //    {
@@ -92,28 +92,28 @@ void peer::generate_key() {}
 
 void peer::handshake(shared_ptr<std::string> msg, shared_ptr<address> addr)
 {
-//    if (!(current_state_ & sent_public_params))
-//    {
-//        handle_public_params(msg, addr);
-//        current_state_ |= sent_public_params;
-//    }
-//    else if (!(current_state_ & received_public_params))
-//    {
-//        current_state_ |= received_public_params;
-//    }
-//    else if (!(current_state_ & sent_fake_shared_key))
-//    {
-//        handle_fake_shared_key(msg, addr);
-//        current_state_ |= sent_fake_shared_key;
-//    }
-//    else if (!(current_state_ & received_fake_shared_key))
-//    {
-//        current_state_ |= received_fake_shared_key;
-//    }
-//    else
-//    {
-//        generate_key();
-//    }
+    //    if (!(current_state_ & sent_public_params))
+    //    {
+    //        handle_public_params(msg, addr);
+    //        current_state_ |= sent_public_params;
+    //    }
+    //    else if (!(current_state_ & received_public_params))
+    //    {
+    //        current_state_ |= received_public_params;
+    //    }
+    //    else if (!(current_state_ & sent_fake_shared_key))
+    //    {
+    //        handle_fake_shared_key(msg, addr);
+    //        current_state_ |= sent_fake_shared_key;
+    //    }
+    //    else if (!(current_state_ & received_fake_shared_key))
+    //    {
+    //        current_state_ |= received_fake_shared_key;
+    //    }
+    //    else
+    //    {
+    //        generate_key();
+    //    }
     // handler_ = feed;
     //    encrypt_layer_ = boost::make_shared<encrypt_layer>(encrypt_layer::algorithm::AES_128, key_);
 }
@@ -133,7 +133,7 @@ void peer::feed(shared_ptr<std::string> encrypted_msg)
     if (it == stream_map_.end())
     {
         stream_map_.insert(stream_map_type::value_type(
-                               new_datagram->id_, make_shared<stream>(stream(io_context_, *this, new_datagram->id_))));
+            new_datagram->id_, make_shared<stream>(stream(io_context_, *this, new_datagram->id_))));
         // send new stream message
         output_ring.put(make_shared<new_stream>(addr_, new_datagram->id_));
 
@@ -153,7 +153,7 @@ void peer::feed(shared_ptr<std::string> encrypted_msg)
     it->second->feed(new_datagram);
 }
 
-//void peer::feed(shared_ptr<std::string> encrypted_msg, shared_ptr<address> addr)
+// void peer::feed(shared_ptr<std::string> encrypted_msg, shared_ptr<address> addr)
 //{
 //    // decrypt first
 //    boost::shared_ptr<std::string> msg = encrypt_layer_->decrypt(encrypted_msg);
@@ -187,7 +187,7 @@ void peer::feed(shared_ptr<std::string> encrypted_msg)
 //}
 void peer::send_datagram(shared_ptr<datagram> msg)
 {
-    std::cout<<std::string(*msg)<<std::endl;
+    std::cout << std::string(*msg) << std::endl;
     // convert to rawbytes
     shared_ptr<std::string> bytes = shared_ptr<std::string>(*msg);
     // encrypt first
@@ -197,7 +197,7 @@ void peer::send_datagram(shared_ptr<datagram> msg)
         encrypted, make_shared<address>(addr_), [](shared_ptr<std::string> msg, shared_ptr<address> addr) {});
 }
 
-const address &peer::addr() const
+const address& peer::addr() const
 {
     return addr_;
 }

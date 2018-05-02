@@ -1,9 +1,8 @@
 #include "ring.h"
 
-namespace sml {
-ring::ring()
+namespace sml
 {
-}
+ring::ring() {}
 
 void ring::put(shared_ptr<message> msg)
 {

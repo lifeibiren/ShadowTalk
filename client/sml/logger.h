@@ -3,15 +3,15 @@
 
 #include <iostream>
 
-namespace sml {
+namespace sml
+{
 class logger
 {
 public:
     logger();
-    template<typename T>
-    logger &operator<<(const T &t)
+    template <typename T> logger& operator<<(const T& t)
     {
-        std::cout<<t;
+        std::cout << t;
         return *this;
     }
 };

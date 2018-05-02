@@ -1,8 +1,6 @@
 #include "logger.h"
 
-namespace sml {
-logger::logger()
+namespace sml
 {
-
-}
+logger::logger() {}
 }

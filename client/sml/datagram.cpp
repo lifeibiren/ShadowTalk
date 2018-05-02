@@ -24,7 +24,7 @@ datagram::operator shared_ptr<std::string>() const
 }
 datagram::operator std::string() const
 {
-    return string_format("id: %d\ntype: %d\noffset: %d\nlength %d\ndata: %s\n",
-                         id_, type_, offset_, length_, data_.c_str());
+    return string_format(
+        "id: %d\ntype: %d\noffset: %d\nlength %d\ndata: %s\n", id_, type_, offset_, length_, data_.c_str());
 }
 } // namespace shadowtalk

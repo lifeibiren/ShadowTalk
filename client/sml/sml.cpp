@@ -5,17 +5,16 @@ namespace sml
 logger log;
 ring input_ring, output_ring;
 
-service::service(asio::io_context &io_context, uint16_t port)
+service::service(asio::io_context& io_context, uint16_t port)
     : io_context_(io_context)
     , port_(port)
     , udp_layer_(io_context_, port)
-{
-}
+{}
 
 void service::start()
 {
     thread t(bind(&asio::io_context::run, &io_context_));
-//    io_context_.run();
+    //    io_context_.run();
 }
 
 shared_ptr<peer> service::create_peer(const address& addr)
@@ -53,8 +52,8 @@ void service::msg_handler()
     shared_ptr<message> ptr;
     while ((ptr = input_ring.get()) != nullptr)
     {
-        control_message *ctl_ptr = dynamic_cast<control_message *>(ptr.get());
-        ctl_ptr->operator ()(udp_layer_);
+        control_message* ctl_ptr = dynamic_cast<control_message*>(ptr.get());
+        ctl_ptr->operator()(udp_layer_);
     }
 }
 

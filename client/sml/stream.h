@@ -12,26 +12,27 @@ public:
     typedef function<void(shared_ptr<datagram> data)> send_callback_type;
     typedef datagram::id_type id_type;
 
-    stream(asio::io_context &io_context, peer &a_peer, id_type id);
+    stream(asio::io_context& io_context, peer& a_peer, id_type id);
     void feed(shared_ptr<datagram> packet);
-    void send(const std::string &data);
+    void send(const std::string& data);
     void send_one_piece();
+
 private:
     void send_one_datagram();
     void retransmit();
     void send_ack();
 
-//    enum class stream_state_type : uint8_t
-//    {
-//        initial = 0,
-//        sent_hello,
-//        recv_hello,
-//        established,
-//        closed
-//    } state_;
+    //    enum class stream_state_type : uint8_t
+    //    {
+    //        initial = 0,
+    //        sent_hello,
+    //        recv_hello,
+    //        established,
+    //        closed
+    //    } state_;
 
-    asio::io_context &io_context_;
-    peer &peer_;
+    asio::io_context& io_context_;
+    peer& peer_;
     asio::deadline_timer timer;
 
     id_type id_;

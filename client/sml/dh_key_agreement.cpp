@@ -1,6 +1,7 @@
 #include "dh_key_agreement.h"
 
-namespace sml{
+namespace sml
+{
 // RFC 5114, 1024-bit MODP Group with 160-bit Prime Order Subgroup
 // http://tools.ietf.org/html/rfc5114#section-2.1
 const CryptoPP::Integer dh_key_agreement::ref_p("0xB10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C6"
@@ -32,7 +33,7 @@ dh_key_agreement::dh_key_agreement()
 {
     dh->AccessGroupParameters().Initialize(ref_p, ref_q, ref_g);
 
-    if(!dh->GetGroupParameters().ValidateGroup(rnd, 3))
+    if (!dh->GetGroupParameters().ValidateGroup(rnd, 3))
     {
         throw std::runtime_error("Failed to validate prime and generator");
     }
@@ -43,7 +44,7 @@ dh_key_agreement::dh_key_agreement()
 
     // http://groups.google.com/group/sci.crypt/browse_thread/thread/7dc7eeb04a09f0ce
     CryptoPP::Integer v = CryptoPP::ModularExponentiation(g, q, p);
-    if(v != CryptoPP::Integer::One())
+    if (v != CryptoPP::Integer::One())
     {
         throw std::runtime_error("Failed to verify order of the subgroup");
     }
@@ -65,38 +66,45 @@ void dh_key_agreement::set_ephemeral_key_pairs()
     dh2->GenerateEphemeralKeyPair(rnd, *epriv, *epub);
 }
 
-void dh_key_agreement::set_static_key_pairs(const std::string &static_priv_key_bytes, const std::string &static_pub_key_bytes)
+void dh_key_agreement::set_static_key_pairs(
+    const std::string& static_priv_key_bytes, const std::string& static_pub_key_bytes)
 {
-    spriv = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)static_priv_key_bytes.c_str(), static_priv_key_bytes.size());
-    spub = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
+    spriv = boost::make_unique<CryptoPP::SecByteBlock>(
+        (const byte*)static_priv_key_bytes.c_str(), static_priv_key_bytes.size());
+    spub = boost::make_unique<CryptoPP::SecByteBlock>(
+        (const byte*)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
 }
 
-
-void dh_key_agreement::set_ephemeral_key_pairs(const std::string &eph_priv_key_bytes, const std::string &eph_pub_key_bytes)
+void dh_key_agreement::set_ephemeral_key_pairs(
+    const std::string& eph_priv_key_bytes, const std::string& eph_pub_key_bytes)
 {
-    epriv = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_priv_key_bytes.c_str(), eph_priv_key_bytes.size());
-    epub = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
+    epriv = boost::make_unique<CryptoPP::SecByteBlock>(
+        (const byte*)eph_priv_key_bytes.c_str(), eph_priv_key_bytes.size());
+    epub = boost::make_unique<CryptoPP::SecByteBlock>((const byte*)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
 }
 
-void dh_key_agreement::set_peer_pub_key_pairs(const std::string &static_pub_key_bytes, const std::string &eph_pub_key_bytes)
+void dh_key_agreement::set_peer_pub_key_pairs(
+    const std::string& static_pub_key_bytes, const std::string& eph_pub_key_bytes)
 {
-    peer_spub = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
-    peer_epub = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
+    peer_spub = boost::make_unique<CryptoPP::SecByteBlock>(
+        (const byte*)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
+    peer_epub
+        = boost::make_unique<CryptoPP::SecByteBlock>((const byte*)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
 }
 
 shared_ptr<std::string> dh_key_agreement::generate_shared_key()
 {
     shared = make_unique<CryptoPP::SecByteBlock>(dh2->AgreedValueLength());
 
-    if(!dh2->Agree(*shared, *spriv, *epriv, *peer_spub, *peer_epub))
+    if (!dh2->Agree(*shared, *spriv, *epriv, *peer_spub, *peer_epub))
     {
         throw std::runtime_error("Failed to reach shared secret");
     }
 
-    CryptoPP::Integer a;// b;
+    CryptoPP::Integer a; // b;
     a.Decode(shared->BytePtr(), shared->SizeInBytes());
     std::cout << "Shared secret (A): " << std::hex << a << std::endl;
 
-    return boost::make_shared<std::string>((const char *)(const void *)*shared, shared->size());
+    return boost::make_shared<std::string>((const char*)(const void*)*shared, shared->size());
 }
 }

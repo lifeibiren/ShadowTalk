@@ -16,8 +16,8 @@
 #include <boost/make_unique.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/smart_ptr.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <cinttypes>
 #include <string>
@@ -43,13 +43,11 @@ class logger;
 extern ring input_ring, output_ring;
 }
 
-
-template<typename ... Args>
-std::string string_format(const std::string &format, Args ... args)
+template <typename... Args> std::string string_format(const std::string& format, Args... args)
 {
-    size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1;
+    size_t size = snprintf(nullptr, 0, format.c_str(), args...) + 1;
     std::unique_ptr<char[]> buf(new char[size]);
-    snprintf(buf.get(), size, format.c_str(), args ...);
+    snprintf(buf.get(), size, format.c_str(), args...);
     return std::string(buf.get(), buf.get() + size - 1);
 }
 

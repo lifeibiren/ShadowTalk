@@ -31,9 +31,7 @@ byte_string::byte_string(const void* buf, int len)
     memcpy(buf_.get(), buf, data_len_);
 }
 
-byte_string::~byte_string()
-{
-}
+byte_string::~byte_string() {}
 
 const char* byte_string::c_array() const
 {
@@ -81,7 +79,7 @@ uint64_t byte_string::read(void* buf, uint64_t n)
     {
         return 0;
     }
-    n = can_read() >= n  ? n : can_read();
+    n = can_read() >= n ? n : can_read();
     bcopy(buf_.get() + offset_, (uint8_t*)buf, n);
     offset_ += n;
     return n;
@@ -91,18 +89,18 @@ uint64_t byte_string::seek(whence_type whence, int64_t offset)
 {
     switch (whence)
     {
-    case whence_type::seek_cur:
-        offset_ += offset;
-        break;
-    case whence_type::seek_end:
-        offset_ = data_len_ + offset;
-        break;
-    case whence_type::seek_set:
-        offset_ = offset;
-        break;
-    default:
-        return -1;
-        break;
+        case whence_type::seek_cur:
+            offset_ += offset;
+            break;
+        case whence_type::seek_end:
+            offset_ = data_len_ + offset;
+            break;
+        case whence_type::seek_set:
+            offset_ = offset;
+            break;
+        default:
+            return -1;
+            break;
     }
     if (offset_ > data_len_)
     {
@@ -205,7 +203,7 @@ size_t byte_string::_change_buffer_size_to(size_t size)
         buf_size_ = 0;
         return 0;
     }
-    std::unique_ptr<char []> new_buf(new char[size]);
+    std::unique_ptr<char[]> new_buf(new char[size]);
     if (new_buf == nullptr)
     {
         // failed to new
@@ -246,8 +244,7 @@ void byte_string::might_update_data_len()
     data_len_ = offset_ > data_len_ ? offset_ : data_len_;
 }
 
-template <>
-byte_string &byte_string::operator<<(const std::string &val)
+template <> byte_string& byte_string::operator<<(const std::string& val)
 {
     if (write(val.c_str(), val.size()) != val.size())
     {
@@ -256,8 +253,7 @@ byte_string &byte_string::operator<<(const std::string &val)
     return *this;
 }
 
-template <>
-byte_string &byte_string::operator>>(std::string &val)
+template <> byte_string& byte_string::operator>>(std::string& val)
 {
     uint64_t length = can_read();
     std::unique_ptr<char[]> buf(new char[length]);

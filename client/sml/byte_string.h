@@ -20,7 +20,8 @@ public:
         seek_cur = 1,
         seek_end = 2
     };
-    struct seek_out_of_range : exception_base {};
+    struct seek_out_of_range : exception_base
+    {};
 
     byte_string()
         : buf_(NULL)
@@ -66,8 +67,7 @@ public:
     bool operator>=(const byte_string& val) const;
     byte_string& operator+(const byte_string& val);
 
-    template <typename T>
-    byte_string &operator<<(const T &val)
+    template <typename T> byte_string& operator<<(const T& val)
     {
         if (write(&val, sizeof(T)) != sizeof(T))
         {
@@ -76,8 +76,7 @@ public:
         return *this;
     }
 
-    template <typename T>
-    byte_string &operator>>(T &val)
+    template <typename T> byte_string& operator>>(T& val)
     {
         if (read(&val, sizeof(T)) != sizeof(T))
         {
@@ -85,6 +84,7 @@ public:
         }
         return *this;
     }
+
 private:
     size_t gurantee_space(size_t size);
     size_t _change_buffer_size_to(size_t size);

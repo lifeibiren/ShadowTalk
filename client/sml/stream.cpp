@@ -3,14 +3,16 @@
 
 namespace sml
 {
-stream::stream(asio::io_context &io_context, peer &a_peer, id_type id)
+stream::stream(asio::io_context& io_context, peer& a_peer, id_type id)
     : io_context_(io_context)
     , peer_(a_peer)
-//    , state_(stream_state_type::initial)
+    //    , state_(stream_state_type::initial)
     , id_(id)
     , timer(io_context_)
-    , send_offset_(0), recv_offset_(0)
-    , send_length_(0), recv_length_(0)
+    , send_offset_(0)
+    , recv_offset_(0)
+    , send_length_(0)
+    , recv_length_(0)
 {}
 
 void stream::feed(shared_ptr<datagram> new_datagram)
@@ -36,8 +38,7 @@ void stream::feed(shared_ptr<datagram> new_datagram)
     }
 
     datagram_map_type::iterator it = recv_datagram_queue_.begin();
-    if (it != recv_datagram_queue_.end() &&
-            it->first == recv_offset_)
+    if (it != recv_datagram_queue_.end() && it->first == recv_offset_)
     {
         // drain
         do
@@ -48,15 +49,14 @@ void stream::feed(shared_ptr<datagram> new_datagram)
 
             // send received data into ring
             output_ring.put(boost::make_shared<recv_data>(peer_.addr(), id_, recv_data_));
-        } while (it != recv_datagram_queue_.end() &&
-                 it->first == recv_offset_);
+        } while (it != recv_datagram_queue_.end() && it->first == recv_offset_);
 
         // send ack
         send_ack();
     }
 }
 
-void stream::send(const std::string &data)
+void stream::send(const std::string& data)
 {
     send_data_list_.push_back(data);
 
@@ -77,7 +77,7 @@ void stream::send_one_piece()
         return;
     }
 
-    const std::string &send_data_ = *(send_data_list_.begin());
+    const std::string& send_data_ = *(send_data_list_.begin());
 
     size_t offset = 0;
     while (offset < send_data_.size())
@@ -108,8 +108,7 @@ void stream::send_one_datagram()
     timer.cancel();
     // remove datagrams already sent
     datagram_map_type::iterator it = send_datagram_queue_.begin();
-    while (it != send_datagram_queue_.end() &&
-           it->first < send_offset_)
+    while (it != send_datagram_queue_.end() && it->first < send_offset_)
     {
         it = send_datagram_queue_.erase(it);
     }
