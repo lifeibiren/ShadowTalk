@@ -35,6 +35,17 @@ datagram& datagram::operator=(const datagram& val)
     return *this;
 }
 
+bool datagram::operator==(const datagram& val) const
+{
+    return (id_ == val.id_) && (type_ == val.type_) && (offset_ == val.offset_) && (length_ == val.length_) &&
+            (payload_ == val.payload_);
+}
+
+bool datagram::operator!=(const datagram& val) const
+{
+   return !(*this == val);
+}
+
 datagram::operator shared_ptr<std::string>() const
 {
     byte_string b_str;
@@ -74,13 +85,20 @@ shared_ptr<datagram> datagram::create_keep_alive()
     return p;
 }
 
+shared_ptr<datagram> datagram::create_hello()
+{
+    shared_ptr<datagram> p = boost::make_shared<datagram>();
+    p->type_ = msg_type::hello;
+    return p;
+}
+
 shared_ptr<datagram> datagram::create_public_key(const std::string& pub_key)
 {
     shared_ptr<datagram> p = boost::make_shared<datagram>();
     p->type_ = msg_type::public_key;
     p->offset_ = 0;
-    p->payload_ = pub_key;
     p->length_ = pub_key.size();
+    p->payload_ = pub_key;
     return p;
 }
 shared_ptr<datagram> datagram::create_ack(id_type id, offset_type offset)
@@ -91,4 +109,19 @@ shared_ptr<datagram> datagram::create_ack(id_type id, offset_type offset)
     return p;
 }
 
+shared_ptr<datagram> datagram::create_echo(const std::string &content)
+{
+    shared_ptr<datagram> p = boost::make_shared<datagram>();
+    p->type_ = msg_type::echo;
+    p->length_ = content.size();
+    p->payload_ = content;
+    return p;
+}
+
+shared_ptr<datagram> datagram::create_echo_back(const datagram &echo_datagram)
+{
+    shared_ptr<datagram> p = boost::make_shared<datagram>(echo_datagram);
+    p->type_ = msg_type::echo_back;
+    return p;
+}
 } // namespace shadowtalk

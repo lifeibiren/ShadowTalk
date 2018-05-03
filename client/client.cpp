@@ -36,7 +36,7 @@ int main(int argc, char** args)
     sml::address addr("127.0.0.1", port ^ 1);
     service.post(make_shared<sml::add_peer>(addr));
     service.post(make_shared<sml::add_stream>(addr, 0));
-    service.post(make_shared<sml::send_data>(addr, 0, "Hello World\n"));
+//    service.post(make_shared<sml::send_data>(addr, 0, "Hello World\n"));
 
     while (1)
     {
