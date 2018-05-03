@@ -14,6 +14,8 @@ public:
         AES_128
     };
     encrypt_layer(algorithm algo, sptr_string key);
+    std::string encrypt(const std::string& data);
+    std::string decrypt(const std::string& data);
     sptr_string encrypt(sptr_string data);
     sptr_string decrypt(sptr_string data);
 

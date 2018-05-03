@@ -25,7 +25,7 @@ void stream::feed(shared_ptr<datagram> new_datagram)
             recv_datagram_queue_[new_datagram->offset_] = new_datagram;
             break;
         }
-        case datagram::msg_type::acknowledge:
+        case datagram::msg_type::data_ack:
         {
             // update offset
             send_offset_ = new_datagram->offset_;
@@ -43,7 +43,7 @@ void stream::feed(shared_ptr<datagram> new_datagram)
         // drain
         do
         {
-            std::string recv_data_ = it->second->data_;
+            std::string recv_data_ = it->second->payload_;
             recv_offset_ += it->second->length_;
             it = recv_datagram_queue_.erase(it);
 
@@ -91,7 +91,7 @@ void stream::send_one_piece()
         new_datagram->id_ = this->id_;
         new_datagram->length_ = seg_length;
         new_datagram->offset_ = offset;
-        new_datagram->data_ = send_data_.substr(offset, seg_length);
+        new_datagram->payload_ = send_data_.substr(offset, seg_length);
 
         send_datagram_queue_.insert(datagram_map_type::value_type(new_datagram->offset_, new_datagram));
 
@@ -120,7 +120,10 @@ void stream::send_one_datagram()
     }
 
     shared_ptr<datagram> to_send = send_datagram_queue_.begin()->second;
-    peer_.send_datagram(to_send);
+    shared_ptr<datagram> copy = boost::make_shared<datagram>();
+    *copy = *to_send;
+
+    peer_.send_datagram(copy);
     timer.expires_from_now(posix_time::seconds(1));
     timer.async_wait(bind(&stream::retransmit, this));
 }
@@ -133,7 +136,7 @@ void stream::retransmit()
 void stream::send_ack()
 {
     shared_ptr<datagram> ack = make_shared<datagram>();
-    ack->type_ = datagram::msg_type::acknowledge;
+    ack->type_ = datagram::msg_type::data_ack;
     ack->id_ = this->id_;
     ack->offset_ = this->recv_offset_;
     ack->length_ = 0;

@@ -13,6 +13,17 @@ encrypt_layer::encrypt_layer(algorithm algo, sptr_string key)
             break;
     }
 }
+
+std::string encrypt_layer::encrypt(const std::string& data)
+{
+    return encryptor_->encrypt(data);
+}
+
+std::string encrypt_layer::decrypt(const std::string& data)
+{
+    return encryptor_->decrypt(data);
+}
+
 sptr_string encrypt_layer::encrypt(sptr_string data)
 {
     return encryptor_->encrypt(data);

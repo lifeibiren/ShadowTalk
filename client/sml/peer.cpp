@@ -4,12 +4,32 @@ namespace sml
 {
 peer::peer(asio::io_context& io_context, udp_layer& udp_layer, const address& addr)
     : io_context_(io_context)
-    , current_state_(0)
+    , timer_(io_context_)
+    , current_state_(initial)
     , udp_layer_(udp_layer)
     , addr_(addr)
 {
     encrypt_layer_ = boost::make_shared<encrypt_layer>(
         encrypt_layer::algorithm::AES_128, boost::make_shared<std::string>("1234567890123456"));
+    CryptoPP::Integer priv("0xed4b008b62dd2563b6406240ba55ee230bda4c1");
+    CryptoPP::Integer pub("0x6e794b0ea27adebc21bcbe0c2ecc1d3cd92baabc91f3"
+                          "f375020b8ad07220ca20beffbee1d359de88d820ff1b"
+                          "daadb868f2fdec148a9bcfd34b49f4a264a3ab8c9051"
+                          "44eda1ef5cf645ddade075e63748597128f83f5ec290"
+                          "c8b7808a96b4315ddd6cf8cc8f97b938dbfa6b31d3d8"
+                          "2df84c31f6ac55e5362ee417538eb34b419c");
+
+    std::cout << "spriv " << std::hex << priv << std::endl;
+    std::cout << "spub " << std::hex << pub << std::endl;
+    std::unique_ptr<byte[]> priv_blk(new byte[priv.ByteCount()]);
+    std::unique_ptr<byte[]> pub_blk(new byte[pub.ByteCount()]);
+    priv.Encode(priv_blk.get(), priv.ByteCount());
+    pub.Encode(pub_blk.get(), pub.ByteCount());
+    dh_key_agreement_.set_static_key_pairs(std::string((const char*)priv_blk.get(), priv.ByteCount()),
+        std::string((const char*)pub_blk.get(), pub.ByteCount()));
+    peer_spub_ = std::string((const char*)pub_blk.get(), pub.ByteCount());
+
+    send_public_key();
 }
 
 shared_ptr<stream> peer::add_stream(id_type id)
@@ -50,80 +70,90 @@ shared_ptr<stream> peer::get_stream(id_type id)
     }
 }
 
-void peer::async_accept_new_stream(stream_handler_type handler)
+void peer::send_public_key()
 {
-    if (!new_stream_id_.empty())
+    dh_key_agreement_.generate_ephemeral_key_pairs();
+    std::string&& epub = dh_key_agreement_.ephemeral_pub_key();
+    to_send_ = datagram::create_public_key(epub);
+    send_raw_datagram_with_retransmit(to_send_);
+    current_state_ |= sent_public_key;
+}
+
+void peer::handle_public_key(shared_ptr<datagram> new_datagram)
+{
+    if (!(current_state_ & received_public_key))
     {
-        stream_map_type::iterator it = stream_map_.find(new_stream_id_[0]);
-        new_stream_id_.erase(new_stream_id_.begin());
-        if (it != stream_map_.end())
-        {
-            handler(it->second);
-        }
+        std::string peer_epub = new_datagram->payload_;
+        dh_key_agreement_.set_peer_pub_key_pairs(peer_spub_, peer_epub);
+        current_state_ |= received_public_key;
     }
-    else
+    send_ack();
+}
+
+void peer::send_partial_shared_key() {}
+
+void peer::generate_key_final()
+{
+    dh_key_agreement_.generate_shared_key();
+    key_ = boost::make_shared<std::string>(dh_key_agreement_.shared_key());
+    encrypt_layer_ = boost::make_shared<encrypt_layer>(encrypt_layer::algorithm::AES_128, key_);
+}
+
+bool peer::peer_handler(shared_ptr<datagram> new_datagram)
+{
+    switch (new_datagram->type_)
     {
-        new_stream_handler_.push_back(handler);
+        case datagram::msg_type::ack:
+            if (current_state_ & sent_public_key)
+            {
+                current_state_ |= receved_public_key_ack;
+            }
+            timer_.cancel();
+            break;
+        case datagram::msg_type::public_key:
+            handle_public_key(new_datagram);
+            break;
+        case datagram::msg_type::partial_shared_key:
+            break;
+        default:
+            // not interested in this datagram
+            return false;
+            break;
     }
+
+    if (current_state_ == public_key_exchanged)
+    {
+        generate_key_final();
+        current_state_ |= shared_key_agreement;
+    }
+    return true;
 }
 
-std::vector<peer::id_type> peer::new_stream_id_vec() const
+void peer::send_ack()
 {
-    return new_stream_id_;
+    send_raw_datagram(datagram::create_ack(0, 0));
 }
 
-// void peer::packet_handler(shared_ptr<std::string> packet, shared_ptr<address> addr)
-//{
-//    if (current_state_ == established)
-//    {
-//        feed(packet, addr);
-//    }
-//    else
-//    {
-//        handshake(packet, addr);
-//    }
-//}
-void peer::send_public_params() {}
-
-void peer::handle_public_params(shared_ptr<std::string> msg, shared_ptr<address> addr) {}
-void peer::send_fake_shared_key() {}
-void peer::handle_fake_shared_key(shared_ptr<std::string> msg, shared_ptr<address> addr) {}
-void peer::generate_key() {}
-
-void peer::handshake(shared_ptr<std::string> msg, shared_ptr<address> addr)
+void peer::feed(shared_ptr<std::string> msg)
 {
-    //    if (!(current_state_ & sent_public_params))
-    //    {
-    //        handle_public_params(msg, addr);
-    //        current_state_ |= sent_public_params;
-    //    }
-    //    else if (!(current_state_ & received_public_params))
-    //    {
-    //        current_state_ |= received_public_params;
-    //    }
-    //    else if (!(current_state_ & sent_fake_shared_key))
-    //    {
-    //        handle_fake_shared_key(msg, addr);
-    //        current_state_ |= sent_fake_shared_key;
-    //    }
-    //    else if (!(current_state_ & received_fake_shared_key))
-    //    {
-    //        current_state_ |= received_fake_shared_key;
-    //    }
-    //    else
-    //    {
-    //        generate_key();
-    //    }
-    // handler_ = feed;
-    //    encrypt_layer_ = boost::make_shared<encrypt_layer>(encrypt_layer::algorithm::AES_128, key_);
-}
-
-void peer::feed(shared_ptr<std::string> encrypted_msg)
-{
-    // decrypt first
-    boost::shared_ptr<std::string> msg = encrypt_layer_->decrypt(encrypted_msg);
     // convert to datagram
     shared_ptr<datagram> new_datagram = boost::make_shared<datagram>(msg);
+
+    // if peer_handler's interested in it, no need to feed streams
+    if (peer_handler(new_datagram))
+    {
+        return;
+    }
+
+    // never feed streams until established
+    if (current_state_ != established)
+    {
+        return;
+    }
+
+    // decrypt
+    new_datagram->decrypt_payload(*encrypt_layer_);
+
     if (new_datagram == nullptr)
     {
         // convertion error, drop
@@ -137,18 +167,18 @@ void peer::feed(shared_ptr<std::string> encrypted_msg)
         // send new stream message
         output_ring.put(make_shared<new_stream>(addr_, new_datagram->id_));
 
-        it = stream_map_.find(new_datagram->id_);
-        if (new_stream_handler_.empty())
-        {
-            // record new stream id
-            new_stream_id_.push_back(new_datagram->id_);
-        }
-        else
-        {
-            stream_handler_type handler = new_stream_handler_[0];
-            new_stream_handler_.erase(new_stream_handler_.begin());
-            handler(it->second);
-        }
+        //        it = stream_map_.find(new_datagram->id_);
+        //        if (new_stream_handler_.empty())
+        //        {
+        //            // record new stream id
+        //            new_stream_id_.push_back(new_datagram->id_);
+        //        }
+        //        else
+        //        {
+        //            stream_handler_type handler = new_stream_handler_[0];
+        //            new_stream_handler_.erase(new_stream_handler_.begin());
+        //            handler(it->second);
+        //        }
     }
     it->second->feed(new_datagram);
 }
@@ -187,14 +217,47 @@ void peer::feed(shared_ptr<std::string> encrypted_msg)
 //}
 void peer::send_datagram(shared_ptr<datagram> msg)
 {
+    // send nothing until key agreement is complete
+    if (current_state_ != established)
+    {
+        return;
+    }
+
     std::cout << std::string(*msg) << std::endl;
+    // encrypt
+    msg->encrypt_payload(*encrypt_layer_);
+
     // convert to rawbytes
     shared_ptr<std::string> bytes = shared_ptr<std::string>(*msg);
-    // encrypt first
-    boost::shared_ptr<std::string> encrypted = encrypt_layer_->encrypt(bytes);
+    // send bytes
+    do_send(bytes);
+}
+
+void peer::send_raw_datagram(shared_ptr<datagram> msg)
+{
+    shared_ptr<std::string> bytes = (shared_ptr<std::string>)(*msg);
+    do_send(bytes);
+}
+
+void peer::send_raw_datagram_with_retransmit(shared_ptr<datagram> msg)
+{
+    timer_.cancel();
+
+    send_raw_datagram(msg);
+
+    timer_.expires_from_now(boost::posix_time::seconds(1));
+    timer_.async_wait(boost::bind(&peer::retransmit_raw_datagram, this, msg));
+}
+void peer::retransmit_raw_datagram(shared_ptr<datagram> msg)
+{
+    send_raw_datagram_with_retransmit(msg);
+}
+
+void peer::do_send(shared_ptr<std::string> bytes)
+{
     // TODO: add handler
     udp_layer_.send_to(
-        encrypted, make_shared<address>(addr_), [](shared_ptr<std::string> msg, shared_ptr<address> addr) {});
+        bytes, make_shared<address>(addr_), [](shared_ptr<std::string> msg, shared_ptr<address> addr) {});
 }
 
 const address& peer::addr() const
