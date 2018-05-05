@@ -74,7 +74,7 @@ void peer::feed(shared_ptr<std::string> msg)
 {
     // convert to datagram
     shared_ptr<datagram> new_datagram = boost::make_shared<datagram>(msg);
-    std::cout<<std::string(*new_datagram)<<std::endl;
+    std::cout<<"received:\n"<<std::string(*new_datagram)<<std::endl;
     datagram_handler_(new_datagram);
 }
 
@@ -127,7 +127,6 @@ void peer::generate_shared_key()
 void peer::send_ack()
 {
     send_raw_datagram(datagram::create_ack(0, 0));
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::send_hello()
@@ -135,28 +134,25 @@ void peer::send_hello()
     send_raw_datagram_with_retransmit(datagram::create_hello());
     current_state_ |= sent_hello;
     datagram_handler_ = boost::bind(&peer::hello_handler, this, _1);
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::received_hello_handler(shared_ptr<datagram> new_datagram)
 {
     current_state_ |= received_hello;
     send_ack();
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::received_hello_ack_handler(shared_ptr<datagram> new_datagram)
 {
     current_state_ |= received_hello_ack;
     timer_.cancel();
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::hello_complete_handler()
 {
     send_public_key();
     datagram_handler_ = boost::bind(&peer::public_key_exchange_handler, this, _1);
-    log<<__PRETTY_FUNCTION__<<"\n";
+    log<<"hello complete\n";
 }
 
 void peer::send_public_key()
@@ -165,7 +161,6 @@ void peer::send_public_key()
     std::string&& epub = dh_key_agreement_.ephemeral_pub_key();
     send_raw_datagram_with_retransmit(datagram::create_public_key(epub));
     current_state_ |= sent_public_key;
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::received_public_key_handler(shared_ptr<datagram> new_datagram)
@@ -174,14 +169,12 @@ void peer::received_public_key_handler(shared_ptr<datagram> new_datagram)
     dh_key_agreement_.set_peer_pub_key_pairs(peer_spub_, peer_epub);
     current_state_ |= received_public_key;
     send_ack();
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::received_public_key_ack_handler(shared_ptr<datagram> new_datagram)
 {
     current_state_ |= received_public_key_ack;
     timer_.cancel();
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::public_key_exchange_complete_handler()
@@ -190,7 +183,7 @@ void peer::public_key_exchange_complete_handler()
     current_state_ |= shared_key_agreement;
     send_echo();
     datagram_handler_ = boost::bind(&peer::echo_handler, this, _1);
-    log<<__PRETTY_FUNCTION__<<"\n";
+    log<<"public key exchanged compelte\n";
 }
 
 void peer::send_echo()
@@ -198,13 +191,11 @@ void peer::send_echo()
     sent_echo_datagram_ = datagram::create_echo("1234567890");
     send_raw_datagram_with_retransmit(sent_echo_datagram_);
     current_state_ |= wait_for_echo;
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::received_echo_handler(shared_ptr<datagram> new_datagram)
 {
     send_raw_datagram(datagram::create_echo_back(*new_datagram));
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::received_echo_back_handler(shared_ptr<datagram> new_datagram)
@@ -219,9 +210,9 @@ void peer::received_echo_back_handler(shared_ptr<datagram> new_datagram)
         {
             timer_.cancel();
             current_state_ &= ~wait_for_echo;
+            log<<"echo complete\n";
         }
     }
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::echo_handler(shared_ptr<datagram> new_datagram)
@@ -248,13 +239,12 @@ void peer::echo_handler(shared_ptr<datagram> new_datagram)
     if (!(current_state_ & wait_for_echo))
     {
         datagram_handler_ = boost::bind(&peer::established_handler, this, _1);
+        log<<"established\n";
     }
-    log<<__PRETTY_FUNCTION__<<"\n";
 }
 
 void peer::established_handler(shared_ptr<datagram> new_datagram)
 {
-        log<<__PRETTY_FUNCTION__<<"\n";
     // never feed streams until established
     if ((current_state_ & established) != established)
     {
@@ -264,21 +254,21 @@ void peer::established_handler(shared_ptr<datagram> new_datagram)
     if (new_datagram->type_ == datagram::msg_type::hello)
     {
         // hello also means reset
-//        current_state_ = initial;
-//        received_hello_handler(new_datagram);
-//        send_hello();
+        current_state_ = initial;
+        received_hello_handler(new_datagram);
+        send_hello();
         return;
     }
     else if (new_datagram->type_ == datagram::msg_type::echo)
     {
         // handle echo
-//        received_echo_handler(new_datagram);
+        received_echo_handler(new_datagram);
         return;
     }
     else if (new_datagram->type_ == datagram::msg_type::echo_back)
     {
         // handle echo back
-//        received_echo_back_handler(new_datagram);
+        received_echo_back_handler(new_datagram);
         return;
     }
 
@@ -310,7 +300,7 @@ void peer::send_datagram(shared_ptr<datagram> msg)
         return;
     }
 
-    std::cout << std::string(*msg) << std::endl;
+    std::cout << "send:\n"<< std::string(*msg) << std::endl;
     // encrypt
     msg->encrypt_payload(*encrypt_layer_);
 
@@ -322,35 +312,33 @@ void peer::send_datagram(shared_ptr<datagram> msg)
 
 void peer::send_raw_datagram(shared_ptr<datagram> msg)
 {
-//        log<<__PRETTY_FUNCTION__<<"\n";
     shared_ptr<std::string> bytes = (shared_ptr<std::string>)(*msg);
     do_send(bytes);
 }
 
 void peer::send_raw_datagram_with_retransmit(shared_ptr<datagram> msg)
 {
-    static int i = 0;
-    printf("%d\n", i++);
-        log<<__PRETTY_FUNCTION__<<"\n";
     timer_.cancel();
 
     send_raw_datagram(msg);
 
     timer_.expires_from_now(boost::posix_time::seconds(1));
-    timer_.async_wait(boost::bind(&peer::retransmit_raw_datagram, this, msg));
+    timer_.async_wait(boost::bind(&peer::retransmit_raw_datagram,
+                                  this,
+                                  msg,
+                                  boost::asio::placeholders::error));
 }
-void peer::retransmit_raw_datagram(shared_ptr<datagram> msg)
+void peer::retransmit_raw_datagram(shared_ptr<datagram> msg, const system::error_code& ec)
 {
-//        log<<__PRETTY_FUNCTION__<<"\n";
-    send_raw_datagram(msg);
+    if (ec != boost::asio::error::operation_aborted)
+    {
+        send_raw_datagram_with_retransmit(msg);
 
-    timer_.expires_from_now(boost::posix_time::seconds(1));
-    timer_.async_wait(boost::bind(&peer::retransmit_raw_datagram, this, msg));
+    }
 }
 
 void peer::do_send(shared_ptr<std::string> bytes)
 {
-//        log<<__PRETTY_FUNCTION__<<"\n";
     // TODO: add handler
     udp_layer_.send_to(
         bytes, make_shared<address>(addr_), [](shared_ptr<std::string> msg, shared_ptr<address> addr) {});
@@ -362,7 +350,7 @@ const address& peer::addr() const
 }
 
 void peer::hello_handler(shared_ptr<datagram> new_datagram)
-{    log<<__PRETTY_FUNCTION__<<"\n";
+{
     if (new_datagram->type_ == datagram::msg_type::hello)
     {
         received_hello_handler(new_datagram);

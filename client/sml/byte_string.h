@@ -24,7 +24,7 @@ public:
     {};
 
     byte_string()
-        : buf_(NULL)
+        : buf_(nullptr)
         , data_len_(0)
         , buf_size_(0)
         , offset_(0)

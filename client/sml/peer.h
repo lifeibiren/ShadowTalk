@@ -32,7 +32,7 @@ public:
 private:
     void send_raw_datagram(shared_ptr<datagram> msg);
     void send_raw_datagram_with_retransmit(shared_ptr<datagram> msg);
-    void retransmit_raw_datagram(shared_ptr<datagram> msg);
+    void retransmit_raw_datagram(shared_ptr<datagram> msg, const system::error_code& ec);
     void do_send(shared_ptr<std::string> bytes);
 
     void send_ack();

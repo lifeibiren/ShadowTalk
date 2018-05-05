@@ -125,12 +125,15 @@ void stream::send_one_datagram()
 
     peer_.send_datagram(copy);
     timer.expires_from_now(posix_time::seconds(1));
-    timer.async_wait(bind(&stream::retransmit, this));
+    timer.async_wait(bind(&stream::retransmit, this, asio::placeholders::error()));
 }
 
-void stream::retransmit()
+void stream::retransmit(const system::error_code& ec)
 {
-    send_one_datagram();
+    if (ec != asio::error::operation_aborted)
+    {
+        send_one_datagram();
+    }
 }
 
 void stream::send_ack()

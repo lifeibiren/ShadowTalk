@@ -19,7 +19,7 @@ public:
 
 private:
     void send_one_datagram();
-    void retransmit();
+    void retransmit(const system::error_code& ec);
     void send_ack();
 
     //    enum class stream_state_type : uint8_t
