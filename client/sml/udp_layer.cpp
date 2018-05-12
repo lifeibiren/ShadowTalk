@@ -1,10 +1,12 @@
 #include "udp_layer.h"
+#include "sml.h"
 
 namespace sml
 {
-udp_layer::udp_layer(asio::io_context& io_context, uint16_t port)
-    : io_context_(io_context)
-    , socket_(io_context_, asio::ip::udp::endpoint(asio::ip::udp::v4(), port))
+udp_layer::udp_layer(service& a_service)
+    : service_(a_service)
+    , socket_(service_.io_context(),
+              asio::ip::udp::endpoint(asio::ip::udp::v4(), service_.conf().port()))
 {
     start_receive();
 }
@@ -41,7 +43,7 @@ void udp_layer::handle_receive(const boost::system::error_code& error, std::size
         peer_map_type::iterator peer_it = peer_map_.find(*addr);
         if (peer_it == peer_map_.end())
         {
-            peer_map_.insert(peer_map_type::value_type(*addr, make_shared<peer>(io_context_, *this, *addr)));
+            peer_map_.insert(peer_map_type::value_type(*addr, make_shared<peer>(service_.io_context(), *this, *addr)));
             peer_it = peer_map_.find(*addr);
             // send new peer message
             output_ring.put(make_shared<new_peer>(*addr));
@@ -71,7 +73,7 @@ void udp_layer::register_handler(handler_type handler)
 
 void udp_layer::add_peer(const address& addr)
 {
-    peer_map_.insert(peer_map_type::value_type(addr, make_shared<peer>(io_context_, *this, addr)));
+    peer_map_.insert(peer_map_type::value_type(addr, make_shared<peer>(service_.io_context(), *this, addr)));
 }
 
 void udp_layer::del_peer(const address& addr)
@@ -95,6 +97,11 @@ shared_ptr<peer> udp_layer::get_peer(const address& addr)
         return nullptr;
     }
     return it->second;
+}
+
+configuration& udp_layer::conf() const
+{
+    return service_.conf();
 }
 
 void udp_layer::handle_send(const boost::system::error_code& error, shared_ptr<std::string> message,

@@ -38,6 +38,15 @@ public:
     virtual void operator()(udp_layer& a_udp_layer) = 0;
 };
 
+class add_trusted_peer_public_key: control_message
+{
+public:
+    add_trusted_peer_public_key(const std::string &id, const std::string &public_key);
+    void operator()(udp_layer& a_udp_layer);
+private:
+    std::string id_, public_key_;
+};
+
 class info_message
 {
 public:

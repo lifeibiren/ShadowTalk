@@ -27,16 +27,26 @@ void timer_handler(asio::deadline_timer& timer, shared_ptr<sml::stream>& s)
     timer.async_wait(bind(timer_handler, ref(timer), ref(s)));
 }
 
+const char *priv = "0xed4b008b62dd2563b6406240ba55ee230bda4c1";
+const char *pub = "0x6e794b0ea27adebc21bcbe0c2ecc1d3cd92baabc91f3"
+                  "f375020b8ad07220ca20beffbee1d359de88d820ff1b"
+                  "daadb868f2fdec148a9bcfd34b49f4a264a3ab8c9051"
+                  "44eda1ef5cf645ddade075e63748597128f83f5ec290"
+                  "c8b7808a96b4315ddd6cf8cc8f97b938dbfa6b31d3d8"
+                  "2df84c31f6ac55e5362ee417538eb34b419c";
+
 asio::io_context io_context;
 int main(int argc, char** args)
 {
     uint16_t port = atoi(args[1]);
-    sml::service service(io_context, port);
-    service.start();
+    sml::configuration conf(args[2], priv, pub, port, 30, 5);
+    sml::service service(io_context, conf);
+    thread t(bind(&asio::io_context::run, &io_context));
+
     sml::address addr("127.0.0.1", port ^ 1);
     service.post(make_shared<sml::add_peer>(addr));
     service.post(make_shared<sml::add_stream>(addr, 0));
-//    service.post(make_shared<sml::send_data>(addr, 0, "Hello World\n"));
+    service.post(make_shared<sml::send_data>(addr, 0, "Hello World\n"));
 
     while (1)
     {
@@ -51,34 +61,5 @@ int main(int argc, char** args)
             }
         }
     }
-    //    shared_ptr<sml::service> service = make_shared<sml::service>(io_context, port);
-    //    service->init();
-    //    service->async_accept_peer(peer_handler);
-    //    sml::address addr("127.0.0.1", port ^ 1);
-    //    shared_ptr<sml::peer> q = service->create_peer(addr);
-    //    shared_ptr<sml::stream> s = q->create_stream(0);
-    //    shared_ptr<std::string> str = make_shared<std::string>("Helloworld\n");
-    //    (*s) << str;
-    //    //boost::thread t(boost::bind(&boost::asio::io_context::run, &sml::sml_io_context));
-    //    asio::deadline_timer timer(io_context);
-    //    timer.expires_from_now(boost::posix_time::seconds(1));
-    //    timer.async_wait(bind(timer_handler, ref(timer), ref(s)));
-    //    service->start();
-
-    //    sml::encrypt_layer encrypt_layer_(
-    //        sml::encrypt_layer::algorithm::AES_128, sptr_string(new std::string((char*)key, 16)));
-    //    sptr_string text(new std::string("Hello world\n"));
-    //    sptr_string cipher = encrypt_layer_.encrypt(text);
-    //    for (int i = 0; i < cipher->size(); i++)
-    //        printf("%02x ", byte((*cipher)[i]));
-    //    sptr_string plain = encrypt_layer_.decrypt(cipher);
-    //    std::cout << *plain << std::endl;
-
-    //    text = sptr_string(new std::string("Are you nuts?\n"));
-    //    cipher = encrypt_layer_.encrypt(text);
-    //    for (int i = 0; i < cipher->size(); i++)
-    //        printf("%02x ", byte((*cipher)[i]));
-    //    plain = encrypt_layer_.decrypt(cipher);
-    //    std::cout << *plain << std::endl;
     return 0;
 }

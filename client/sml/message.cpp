@@ -11,6 +11,18 @@ message::message(msg_type type)
 {}
 message::~message() {}
 
+add_trusted_peer_public_key::add_trusted_peer_public_key(const std::string &id,
+                                                         const std::string &public_key)
+    : id_(id)
+    , public_key_(public_key)
+{
+}
+
+void add_trusted_peer_public_key::operator()(udp_layer& a_udp_layer)
+{
+    a_udp_layer.conf().add_trusted_peer_public_key(id_, public_key_);
+}
+
 info_message::info_message(const std::string& info)
     : info_(info)
 {}

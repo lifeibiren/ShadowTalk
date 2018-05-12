@@ -85,10 +85,12 @@ shared_ptr<datagram> datagram::create_keep_alive()
     return p;
 }
 
-shared_ptr<datagram> datagram::create_hello()
+shared_ptr<datagram> datagram::create_hello(const std::string &my_id)
 {
     shared_ptr<datagram> p = boost::make_shared<datagram>();
     p->type_ = msg_type::hello;
+    p->payload_ = my_id;
+    p->length_ = p->payload_.size();
     return p;
 }
 

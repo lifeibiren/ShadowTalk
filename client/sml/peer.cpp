@@ -2,23 +2,25 @@
 
 namespace sml
 {
-peer::peer(asio::io_context& io_context, udp_layer& udp_layer, const address& addr)
+peer::peer(asio::io_context& io_context, udp_layer& a_udp_layer, const address& addr)
     : io_context_(io_context)
     , timer_(io_context_)
     , current_state_(initial)
-    , udp_layer_(udp_layer)
+    , udp_layer_(a_udp_layer)
     , addr_(addr)
 {
-    encrypt_layer_ = boost::make_shared<encrypt_layer>(
-        encrypt_layer::algorithm::AES_128, boost::make_shared<std::string>("1234567890123456"));
-    CryptoPP::Integer priv("0xed4b008b62dd2563b6406240ba55ee230bda4c1");
-    CryptoPP::Integer pub("0x6e794b0ea27adebc21bcbe0c2ecc1d3cd92baabc91f3"
-                          "f375020b8ad07220ca20beffbee1d359de88d820ff1b"
-                          "daadb868f2fdec148a9bcfd34b49f4a264a3ab8c9051"
-                          "44eda1ef5cf645ddade075e63748597128f83f5ec290"
-                          "c8b7808a96b4315ddd6cf8cc8f97b938dbfa6b31d3d8"
-                          "2df84c31f6ac55e5362ee417538eb34b419c");
+//    encrypt_layer_ = boost::make_shared<encrypt_layer>(
+//        encrypt_layer::algorithm::AES_128, boost::make_shared<std::string>("1234567890123456"));
 
+//    CryptoPP::Integer priv("0xed4b008b62dd2563b6406240ba55ee230bda4c1");
+//    CryptoPP::Integer pub("0x6e794b0ea27adebc21bcbe0c2ecc1d3cd92baabc91f3"
+//                          "f375020b8ad07220ca20beffbee1d359de88d820ff1b"
+//                          "daadb868f2fdec148a9bcfd34b49f4a264a3ab8c9051"
+//                          "44eda1ef5cf645ddade075e63748597128f83f5ec290"
+//                          "c8b7808a96b4315ddd6cf8cc8f97b938dbfa6b31d3d8"
+//                          "2df84c31f6ac55e5362ee417538eb34b419c");
+
+    CryptoPP::Integer priv(udp_layer_.conf().private_key().c_str()), pub(udp_layer_.conf().public_key().c_str());
     std::cout << "spriv " << std::hex << priv << std::endl;
     std::cout << "spub " << std::hex << pub << std::endl;
     std::unique_ptr<byte[]> priv_blk(new byte[priv.ByteCount()]);
@@ -131,7 +133,7 @@ void peer::send_ack()
 
 void peer::send_hello()
 {
-    send_raw_datagram_with_retransmit(datagram::create_hello());
+    send_raw_datagram_with_retransmit(datagram::create_hello(udp_layer_.conf().id()));
     current_state_ |= sent_hello;
     datagram_handler_ = boost::bind(&peer::hello_handler, this, _1);
 }
@@ -293,7 +295,6 @@ void peer::established_handler(shared_ptr<datagram> new_datagram)
 
 void peer::send_datagram(shared_ptr<datagram> msg)
 {
-        log<<__PRETTY_FUNCTION__<<"\n";
     // send nothing until key agreement is complete
     if ((current_state_ & established) != established)
     {

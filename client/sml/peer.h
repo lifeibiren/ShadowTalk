@@ -26,9 +26,7 @@ public:
     //    std::vector<id_type> new_stream_id_vec() const;
     void feed(shared_ptr<std::string> data);
     void send_datagram(shared_ptr<datagram> data);
-
     const address& addr() const;
-
 private:
     void send_raw_datagram(shared_ptr<datagram> msg);
     void send_raw_datagram_with_retransmit(shared_ptr<datagram> msg);

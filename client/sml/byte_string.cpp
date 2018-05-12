@@ -204,13 +204,16 @@ size_t byte_string::_change_buffer_size_to(size_t size)
         return 0;
     }
     std::unique_ptr<char[]> new_buf(new char[size]);
-    if (new_buf == nullptr)
+    if (!new_buf)
     {
         // failed to new
         return buf_size_;
     }
-    int min_size = utils::min(size, data_len_);
-    memcpy(new_buf.get(), buf_.get(), min_size);
+    if (buf_)
+    {
+        int min_size = utils::min(size, data_len_);
+        memcpy(new_buf.get(), buf_.get(), min_size);
+    }
     buf_ = boost::move(new_buf);
     buf_size_ = size;
     return buf_size_;

@@ -5,7 +5,6 @@
 
 namespace sml
 {
-class message;
 class datagram
 {
 public:
@@ -20,7 +19,6 @@ public:
     void encrypt_payload(encrypt_layer& el);
     void decrypt_payload(encrypt_layer& el);
 
-    typedef uint32_t id_type;
     enum class msg_type : uint8_t
     {
         keep_alive,
@@ -34,6 +32,7 @@ public:
         data_ack,
         abort
     };
+    typedef uint32_t id_type;
     typedef uint32_t offset_type;
     typedef uint32_t length_type;
 
@@ -44,7 +43,7 @@ public:
     std::string payload_;
 
     static shared_ptr<datagram> create_keep_alive();
-    static shared_ptr<datagram> create_hello();
+    static shared_ptr<datagram> create_hello(const std::string &my_id);
     static shared_ptr<datagram> create_public_key(const std::string& pub_key);
     static shared_ptr<datagram> create_ack(id_type id, offset_type offset);
     static shared_ptr<datagram> create_echo(const std::string &content);

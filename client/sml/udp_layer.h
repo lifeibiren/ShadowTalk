@@ -4,10 +4,10 @@
 #include "address.h"
 #include "config.h"
 #include "peer.h"
+#include "configuration.h"
 
 namespace sml
 {
-class service;
 class udp_layer
 {
 public:
@@ -18,7 +18,7 @@ public:
     };
     typedef unordered_map<address, shared_ptr<peer>, peer_hash_func> peer_map_type;
 
-    udp_layer(asio::io_context& io_context, uint16_t port);
+    udp_layer(service& a_service);
     void send_to(shared_ptr<std::string> msg, shared_ptr<address> addr, handler_type handler);
     void register_handler(handler_type handler, shared_ptr<address> addr_hits);
     void register_handler(handler_type handler);
@@ -27,19 +27,20 @@ public:
     void del_peer(const address& addr);
     shared_ptr<peer> get_peer(const address& addr);
 
+    configuration& conf() const;
 private:
     void start_receive();
     void handle_receive(const boost::system::error_code& error_message, std::size_t bytes_transferred);
     void handle_send(const boost::system::error_code& error_message, shared_ptr<std::string> message,
         shared_ptr<address> addr, handler_type handler);
 
-    asio::io_context& io_context_;
+    service& service_;
     struct hash_func : std::unary_function<shared_ptr<address>, std::size_t>
     {
         size_t operator()(const shared_ptr<address>& x) const { return x->hash(); }
     };
 
-    unordered_map<shared_ptr<address>, handler_type, hash_func> handler_map_;
+    boost::unordered_map<shared_ptr<address>, handler_type, hash_func> handler_map_;
 
     peer_map_type peer_map_;
 
