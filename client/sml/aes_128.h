@@ -14,11 +14,11 @@ class encryptor;
 class aes_128 : public encryptor
 {
 public:
-    aes_128(sptr_string& key);
+    aes_128(sptr_string &key);
     void set_key(sptr_string key);
 
-    std::string encrypt(const std::string& data);
-    std::string decrypt(const std::string& data);
+    std::string encrypt(const std::string &data);
+    std::string decrypt(const std::string &data);
     sptr_string encrypt(sptr_string data);
     sptr_string decrypt(sptr_string data);
 

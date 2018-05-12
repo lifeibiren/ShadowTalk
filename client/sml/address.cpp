@@ -2,20 +2,20 @@
 
 namespace sml
 {
-address::address(const std::string& ip_addr, uint16_t port)
+address::address(const std::string &ip_addr, uint16_t port)
     : ip_addr_(ip_addr)
     , port_(port)
 {}
-address::address(const asio::ip::udp::endpoint& endpoint)
+address::address(const asio::ip::udp::endpoint &endpoint)
 {
     ip_addr_ = endpoint.address().to_string();
     port_ = endpoint.port();
 }
-const std::string& address::ip() const
+const std::string &address::ip() const
 {
     return ip_addr_;
 }
-void address::set_ip(const std::string& ip)
+void address::set_ip(const std::string &ip)
 {
     ip_addr_ = ip;
 }
@@ -27,7 +27,7 @@ void address::set_port(uint16_t port)
 {
     port_ = port;
 }
-bool address::operator==(const address& val) const
+bool address::operator==(const address &val) const
 {
     if (ip_addr_ == val.ip_addr_ && port_ == val.port_)
     {

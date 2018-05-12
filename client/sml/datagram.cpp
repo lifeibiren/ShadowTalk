@@ -10,7 +10,7 @@ datagram::datagram()
     , length_(0)
 {}
 
-datagram::datagram(const datagram& val)
+datagram::datagram(const datagram &val)
 {
     *this = val;
 }
@@ -25,7 +25,7 @@ datagram::datagram(shared_ptr<std::string> bytes)
     b_str >> payload_;
 }
 
-datagram& datagram::operator=(const datagram& val)
+datagram &datagram::operator=(const datagram &val)
 {
     id_ = val.id_;
     type_ = val.type_;
@@ -35,15 +35,15 @@ datagram& datagram::operator=(const datagram& val)
     return *this;
 }
 
-bool datagram::operator==(const datagram& val) const
+bool datagram::operator==(const datagram &val) const
 {
-    return (id_ == val.id_) && (type_ == val.type_) && (offset_ == val.offset_) && (length_ == val.length_) &&
-            (payload_ == val.payload_);
+    return (id_ == val.id_) && (type_ == val.type_) && (offset_ == val.offset_) && (length_ == val.length_)
+        && (payload_ == val.payload_);
 }
 
-bool datagram::operator!=(const datagram& val) const
+bool datagram::operator!=(const datagram &val) const
 {
-   return !(*this == val);
+    return !(*this == val);
 }
 
 datagram::operator shared_ptr<std::string>() const
@@ -62,7 +62,7 @@ datagram::operator std::string() const
         "id: %d\ntype: %d\noffset: %d\nlength %d\npayload: %s\n", id_, type_, offset_, length_, payload_.c_str());
 }
 
-void datagram::encrypt_payload(encrypt_layer& el)
+void datagram::encrypt_payload(encrypt_layer &el)
 {
     if (payload_.size() != 0)
     {
@@ -70,7 +70,7 @@ void datagram::encrypt_payload(encrypt_layer& el)
     }
 }
 
-void datagram::decrypt_payload(encrypt_layer& el)
+void datagram::decrypt_payload(encrypt_layer &el)
 {
     if (payload_.size() != 0)
     {
@@ -94,7 +94,7 @@ shared_ptr<datagram> datagram::create_hello(const std::string &my_id)
     return p;
 }
 
-shared_ptr<datagram> datagram::create_public_key(const std::string& pub_key)
+shared_ptr<datagram> datagram::create_public_key(const std::string &pub_key)
 {
     shared_ptr<datagram> p = boost::make_shared<datagram>();
     p->type_ = msg_type::public_key;

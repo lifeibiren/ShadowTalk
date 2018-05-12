@@ -11,19 +11,17 @@ message::message(msg_type type)
 {}
 message::~message() {}
 
-add_trusted_peer_public_key::add_trusted_peer_public_key(const std::string &id,
-                                                         const std::string &public_key)
+add_trusted_peer_public_key::add_trusted_peer_public_key(const std::string &id, const std::string &public_key)
     : id_(id)
     , public_key_(public_key)
-{
-}
+{}
 
-void add_trusted_peer_public_key::operator()(udp_layer& a_udp_layer)
+void add_trusted_peer_public_key::operator()(udp_layer &a_udp_layer)
 {
     a_udp_layer.conf().add_trusted_peer_public_key(id_, public_key_);
 }
 
-info_message::info_message(const std::string& info)
+info_message::info_message(const std::string &info)
     : info_(info)
 {}
 
@@ -36,7 +34,7 @@ add_peer::add_peer(address addr)
     : peer_message(msg_type::add_peer, addr)
 {}
 
-void add_peer::operator()(udp_layer& a_udp_layer)
+void add_peer::operator()(udp_layer &a_udp_layer)
 {
     std::cout << "add peer" << std::endl;
     a_udp_layer.add_peer(addr_);
@@ -46,7 +44,7 @@ del_peer::del_peer(address addr)
     : peer_message(msg_type::del_peer, addr)
 {}
 
-void del_peer::operator()(udp_layer& a_udp_layer)
+void del_peer::operator()(udp_layer &a_udp_layer)
 {
     a_udp_layer.del_peer(addr_);
 }
@@ -65,7 +63,7 @@ add_stream::add_stream(address addr, datagram::id_type id)
     : stream_message(msg_type::add_stream, addr, id)
 {}
 
-void add_stream::operator()(udp_layer& a_udp_layer)
+void add_stream::operator()(udp_layer &a_udp_layer)
 {
     shared_ptr<peer> _peer = a_udp_layer.get_peer(addr_);
     if (_peer)
@@ -78,7 +76,7 @@ del_stream::del_stream(address addr, datagram::id_type id)
     : stream_message(msg_type::del_stream, addr, id)
 {}
 
-void del_stream::operator()(udp_layer& a_udp_layer)
+void del_stream::operator()(udp_layer &a_udp_layer)
 {
     shared_ptr<peer> _peer = a_udp_layer.get_peer(addr_);
     if (_peer)
@@ -91,14 +89,14 @@ new_stream::new_stream(address addr, datagram::id_type id)
     : stream_message(msg_type::new_stream, addr, id)
 {}
 
-data_message::data_message(msg_type type, address addr, datagram::id_type id, const std::string& data)
+data_message::data_message(msg_type type, address addr, datagram::id_type id, const std::string &data)
     : message(type)
     , addr_(addr)
     , id_(id)
     , data_(data)
 {}
 
-recv_data::recv_data(address addr, datagram::id_type id, const std::string& data)
+recv_data::recv_data(address addr, datagram::id_type id, const std::string &data)
     : data_message(msg_type::recv_data, addr, id, data)
 {}
 
@@ -107,11 +105,11 @@ recv_data::operator std::string()
     return data_;
 }
 
-send_data::send_data(address addr, datagram::id_type id, const std::string& data)
+send_data::send_data(address addr, datagram::id_type id, const std::string &data)
     : data_message(msg_type::send_data, addr, id, data)
 {}
 
-void send_data::operator()(udp_layer& a_udp_layer)
+void send_data::operator()(udp_layer &a_udp_layer)
 {
     shared_ptr<peer> _peer = a_udp_layer.get_peer(addr_);
     if (_peer)
@@ -124,7 +122,7 @@ void send_data::operator()(udp_layer& a_udp_layer)
     }
 }
 
-error_message::error_message(const std::string& info)
+error_message::error_message(const std::string &info)
     : message(msg_type::error)
     , info_message(info)
 {}

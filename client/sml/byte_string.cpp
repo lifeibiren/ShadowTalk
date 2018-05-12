@@ -9,7 +9,7 @@ byte_string::byte_string(int init_buf_size)
     _change_buffer_size_to(init_buf_size);
 }
 
-byte_string::byte_string(std::string& val)
+byte_string::byte_string(std::string &val)
     : byte_string(val.size())
 {
     data_len_ = val.size();
@@ -17,14 +17,14 @@ byte_string::byte_string(std::string& val)
     memcpy(buf_.get(), val.c_str(), data_len_);
 }
 
-byte_string::byte_string(const byte_string& val)
+byte_string::byte_string(const byte_string &val)
     : byte_string(val.buf_size_)
 {
     data_len_ = val.data_len_;
     memcpy(buf_.get(), val.buf_.get(), data_len_);
 }
 
-byte_string::byte_string(const void* buf, int len)
+byte_string::byte_string(const void *buf, int len)
     : byte_string(len)
 {
     data_len_ = len;
@@ -33,7 +33,7 @@ byte_string::byte_string(const void* buf, int len)
 
 byte_string::~byte_string() {}
 
-const char* byte_string::c_array() const
+const char *byte_string::c_array() const
 {
     return buf_.get();
 }
@@ -54,7 +54,7 @@ uint64_t byte_string::can_write() const
     return buf_size_ - offset_;
 }
 
-uint64_t byte_string::write(const void* buf, uint64_t n)
+uint64_t byte_string::write(const void *buf, uint64_t n)
 {
     if (buf == NULL || n == 0)
     {
@@ -73,14 +73,14 @@ uint64_t byte_string::can_read() const
     return data_len_ - offset_;
 }
 
-uint64_t byte_string::read(void* buf, uint64_t n)
+uint64_t byte_string::read(void *buf, uint64_t n)
 {
     if (buf == NULL || n == 0)
     {
         return 0;
     }
     n = can_read() >= n ? n : can_read();
-    bcopy(buf_.get() + offset_, (uint8_t*)buf, n);
+    bcopy(buf_.get() + offset_, (uint8_t *)buf, n);
     offset_ += n;
     return n;
 }
@@ -109,18 +109,18 @@ uint64_t byte_string::seek(whence_type whence, int64_t offset)
     return offset_;
 }
 
-uint64_t byte_string::append(void* buf, int n)
+uint64_t byte_string::append(void *buf, int n)
 {
     (void)seek(whence_type::seek_end, 0);
     return write(buf, n);
 }
 
-uint64_t byte_string::append(const byte_string& val)
+uint64_t byte_string::append(const byte_string &val)
 {
     return append(val.buf_.get(), val.data_len_);
 }
 
-char& byte_string::operator[](int index)
+char &byte_string::operator[](int index)
 {
     if (index < data_len_ && index >= 0)
     {
@@ -142,7 +142,7 @@ uint64_t byte_string::capacity() const
     return buf_size_;
 }
 
-byte_string& byte_string::operator=(const byte_string& val)
+byte_string &byte_string::operator=(const byte_string &val)
 {
     _change_buffer_size_to(val.buf_size_);
     data_len_ = val.data_len_;
@@ -150,7 +150,7 @@ byte_string& byte_string::operator=(const byte_string& val)
     return *this;
 }
 
-bool byte_string::operator==(const byte_string& val) const
+bool byte_string::operator==(const byte_string &val) const
 {
     if (data_len_ == val.data_len_)
     {
@@ -162,33 +162,33 @@ bool byte_string::operator==(const byte_string& val) const
     }
 }
 
-bool byte_string::operator!=(const byte_string& val) const
+bool byte_string::operator!=(const byte_string &val) const
 {
     return !(*this == val);
 }
 
-bool byte_string::operator<(const byte_string& val) const
+bool byte_string::operator<(const byte_string &val) const
 {
     int min = utils::min(data_len_, val.data_len_);
     return memcmp(buf_.get(), val.buf_.get(), min) < 0;
 }
 
-bool byte_string::operator>(const byte_string& val) const
+bool byte_string::operator>(const byte_string &val) const
 {
     return !(*this < val) && (*this != val);
 }
 
-bool byte_string::operator<=(const byte_string& val) const
+bool byte_string::operator<=(const byte_string &val) const
 {
     return !(*this > val);
 }
 
-bool byte_string::operator>=(const byte_string& val) const
+bool byte_string::operator>=(const byte_string &val) const
 {
     return !(*this < val);
 }
 
-byte_string& byte_string::operator+(const byte_string& val)
+byte_string &byte_string::operator+(const byte_string &val)
 {
     append(val);
     return *this;
@@ -247,7 +247,7 @@ void byte_string::might_update_data_len()
     data_len_ = offset_ > data_len_ ? offset_ : data_len_;
 }
 
-template <> byte_string& byte_string::operator<<(const std::string& val)
+template <> byte_string &byte_string::operator<<(const std::string &val)
 {
     if (write(val.c_str(), val.size()) != val.size())
     {
@@ -256,7 +256,7 @@ template <> byte_string& byte_string::operator<<(const std::string& val)
     return *this;
 }
 
-template <> byte_string& byte_string::operator>>(std::string& val)
+template <> byte_string &byte_string::operator>>(std::string &val)
 {
     uint64_t length = can_read();
     std::unique_ptr<char[]> buf(new char[length]);

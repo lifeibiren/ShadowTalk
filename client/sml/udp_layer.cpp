@@ -3,10 +3,9 @@
 
 namespace sml
 {
-udp_layer::udp_layer(service& a_service)
+udp_layer::udp_layer(service &a_service)
     : service_(a_service)
-    , socket_(service_.io_context(),
-              asio::ip::udp::endpoint(asio::ip::udp::v4(), service_.conf().port()))
+    , socket_(service_.io_context(), asio::ip::udp::endpoint(asio::ip::udp::v4(), service_.conf().port()))
 {
     start_receive();
 }
@@ -18,7 +17,7 @@ void udp_layer::start_receive()
             boost::asio::placeholders::bytes_transferred));
 }
 
-void udp_layer::handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred)
+void udp_layer::handle_receive(const boost::system::error_code &error, std::size_t bytes_transferred)
 {
     if (!error || error == boost::asio::error::message_size)
     {
@@ -71,12 +70,12 @@ void udp_layer::register_handler(handler_type handler)
     default_handler_list_.push_back(handler);
 }
 
-void udp_layer::add_peer(const address& addr)
+void udp_layer::add_peer(const address &addr)
 {
     peer_map_.insert(peer_map_type::value_type(addr, make_shared<peer>(service_.io_context(), *this, addr)));
 }
 
-void udp_layer::del_peer(const address& addr)
+void udp_layer::del_peer(const address &addr)
 {
     size_t ret = peer_map_.erase(addr);
     if (ret < 1)
@@ -89,7 +88,7 @@ void udp_layer::del_peer(const address& addr)
     }
 }
 
-shared_ptr<peer> udp_layer::get_peer(const address& addr)
+shared_ptr<peer> udp_layer::get_peer(const address &addr)
 {
     peer_map_type::iterator it = peer_map_.find(addr);
     if (it == peer_map_.end())
@@ -99,12 +98,12 @@ shared_ptr<peer> udp_layer::get_peer(const address& addr)
     return it->second;
 }
 
-configuration& udp_layer::conf() const
+configuration &udp_layer::conf() const
 {
     return service_.conf();
 }
 
-void udp_layer::handle_send(const boost::system::error_code& error, shared_ptr<std::string> message,
+void udp_layer::handle_send(const boost::system::error_code &error, shared_ptr<std::string> message,
     shared_ptr<address> addr, handler_type handler)
 {
     if (!error)

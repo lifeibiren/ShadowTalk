@@ -15,7 +15,7 @@ void peer_handler(shared_ptr<sml::peer> new_peer)
     std::cout << "there comes a new peer\n";
 }
 
-void timer_handler(asio::deadline_timer& timer, shared_ptr<sml::stream>& s)
+void timer_handler(asio::deadline_timer &timer, shared_ptr<sml::stream> &s)
 {
     shared_ptr<std::string> get;
     //(*s) << str;
@@ -36,7 +36,7 @@ const char *pub = "0x6e794b0ea27adebc21bcbe0c2ecc1d3cd92baabc91f3"
                   "2df84c31f6ac55e5362ee417538eb34b419c";
 
 asio::io_context io_context;
-int main(int argc, char** args)
+int main(int argc, char **args)
 {
     uint16_t port = atoi(args[1]);
     sml::configuration conf(args[2], priv, pub, port, 30, 5);
@@ -54,7 +54,7 @@ int main(int argc, char** args)
         if (ptr)
         {
             std::cout << typeid(*ptr).name() << std::endl;
-            sml::recv_data* data = dynamic_cast<sml::recv_data*>(ptr.get());
+            sml::recv_data *data = dynamic_cast<sml::recv_data *>(ptr.get());
             if (data)
             {
                 std::cout << "received data:" << std::string(*data) << std::endl;

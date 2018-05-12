@@ -3,7 +3,7 @@
 
 namespace sml
 {
-stream::stream(asio::io_context& io_context, peer& a_peer, id_type id)
+stream::stream(asio::io_context &io_context, peer &a_peer, id_type id)
     : io_context_(io_context)
     , peer_(a_peer)
     //    , state_(stream_state_type::initial)
@@ -56,7 +56,7 @@ void stream::feed(shared_ptr<datagram> new_datagram)
     }
 }
 
-void stream::send(const std::string& data)
+void stream::send(const std::string &data)
 {
     send_data_list_.push_back(data);
 
@@ -77,7 +77,7 @@ void stream::send_one_piece()
         return;
     }
 
-    const std::string& send_data_ = *(send_data_list_.begin());
+    const std::string &send_data_ = *(send_data_list_.begin());
 
     size_t offset = 0;
     while (offset < send_data_.size())
@@ -128,7 +128,7 @@ void stream::send_one_datagram()
     timer.async_wait(bind(&stream::retransmit, this, asio::placeholders::error()));
 }
 
-void stream::retransmit(const system::error_code& ec)
+void stream::retransmit(const system::error_code &ec)
 {
     if (ec != asio::error::operation_aborted)
     {

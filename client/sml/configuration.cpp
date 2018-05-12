@@ -1,14 +1,16 @@
 #include "configuration.h"
 
-namespace sml {
-configuration::configuration(const std::string &id, const std::string &private_key,
-                             const std::string &public_key, uint16_t port,
-                             uint32_t timeout, uint32_t max_retries)
-    : id_(id), privkey_(private_key), pubkey_(public_key), port_(port),
-      timeout_(timeout), max_retries_(max_retries)
+namespace sml
 {
-
-}
+configuration::configuration(const std::string &id, const std::string &private_key, const std::string &public_key,
+    uint16_t port, uint32_t timeout, uint32_t max_retries)
+    : id_(id)
+    , privkey_(private_key)
+    , pubkey_(public_key)
+    , port_(port)
+    , timeout_(timeout)
+    , max_retries_(max_retries)
+{}
 
 const std::string &configuration::id() const
 {
@@ -40,7 +42,7 @@ uint32_t configuration::max_retries() const
     return max_retries_;
 }
 
-void configuration::add_trusted_peer_public_key(const std::string& id, const std::string& public_key)
+void configuration::add_trusted_peer_public_key(const std::string &id, const std::string &public_key)
 {
     trusted_key_map_[id] = public_key;
 }

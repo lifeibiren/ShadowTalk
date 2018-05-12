@@ -67,29 +67,30 @@ void dh_key_agreement::generate_ephemeral_key_pairs()
 }
 
 void dh_key_agreement::set_static_key_pairs(
-    const std::string& static_priv_key_bytes, const std::string& static_pub_key_bytes)
+    const std::string &static_priv_key_bytes, const std::string &static_pub_key_bytes)
 {
     spriv = boost::make_unique<CryptoPP::SecByteBlock>(
-        (const byte*)static_priv_key_bytes.c_str(), static_priv_key_bytes.size());
+        (const byte *)static_priv_key_bytes.c_str(), static_priv_key_bytes.size());
     spub = boost::make_unique<CryptoPP::SecByteBlock>(
-        (const byte*)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
+        (const byte *)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
 }
 
 void dh_key_agreement::set_ephemeral_key_pairs(
-    const std::string& eph_priv_key_bytes, const std::string& eph_pub_key_bytes)
+    const std::string &eph_priv_key_bytes, const std::string &eph_pub_key_bytes)
 {
     epriv = boost::make_unique<CryptoPP::SecByteBlock>(
-        (const byte*)eph_priv_key_bytes.c_str(), eph_priv_key_bytes.size());
-    epub = boost::make_unique<CryptoPP::SecByteBlock>((const byte*)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
+        (const byte *)eph_priv_key_bytes.c_str(), eph_priv_key_bytes.size());
+    epub
+        = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
 }
 
 void dh_key_agreement::set_peer_pub_key_pairs(
-    const std::string& static_pub_key_bytes, const std::string& eph_pub_key_bytes)
+    const std::string &static_pub_key_bytes, const std::string &eph_pub_key_bytes)
 {
     peer_spub = boost::make_unique<CryptoPP::SecByteBlock>(
-        (const byte*)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
+        (const byte *)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
     peer_epub
-        = boost::make_unique<CryptoPP::SecByteBlock>((const byte*)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
+        = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
 }
 
 void dh_key_agreement::generate_shared_key()
@@ -108,21 +109,21 @@ void dh_key_agreement::generate_shared_key()
 
 std::string dh_key_agreement::content_encryption_key()
 {
-    return std::string((const char*)cek_->BytePtr(), cek_->size());
+    return std::string((const char *)cek_->BytePtr(), cek_->size());
 }
 
 std::string dh_key_agreement::ephemeral_priv_key() const
 {
-    return std::string((const char*)epriv->BytePtr(), epriv->size());
+    return std::string((const char *)epriv->BytePtr(), epriv->size());
 }
 
 std::string dh_key_agreement::ephemeral_pub_key() const
 {
-    return std::string((const char*)epub->BytePtr(), epub->size());
+    return std::string((const char *)epub->BytePtr(), epub->size());
 }
 
 std::string dh_key_agreement::shared_key() const
 {
-    return std::string((const char*)shared->BytePtr(), shared->size());
+    return std::string((const char *)shared->BytePtr(), shared->size());
 }
 }

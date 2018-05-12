@@ -35,14 +35,15 @@ protected:
 class control_message
 {
 public:
-    virtual void operator()(udp_layer& a_udp_layer) = 0;
+    virtual void operator()(udp_layer &a_udp_layer) = 0;
 };
 
-class add_trusted_peer_public_key: control_message
+class add_trusted_peer_public_key : control_message
 {
 public:
     add_trusted_peer_public_key(const std::string &id, const std::string &public_key);
-    void operator()(udp_layer& a_udp_layer);
+    void operator()(udp_layer &a_udp_layer);
+
 private:
     std::string id_, public_key_;
 };
@@ -50,7 +51,7 @@ private:
 class info_message
 {
 public:
-    info_message(const std::string& info);
+    info_message(const std::string &info);
 
 private:
     const std::string info_;
@@ -69,21 +70,21 @@ class add_peer : public peer_message, public control_message
 {
 public:
     add_peer(address addr);
-    virtual void operator()(udp_layer& a_udp_layer);
+    virtual void operator()(udp_layer &a_udp_layer);
 };
 
 class del_peer : public peer_message, public control_message
 {
 public:
     del_peer(address addr);
-    void operator()(udp_layer& a_udp_layer);
+    void operator()(udp_layer &a_udp_layer);
 };
 
 class new_peer : public peer_message
 {
 public:
     new_peer(address addr);
-    void operator()(udp_layer& a_udp_layer);
+    void operator()(udp_layer &a_udp_layer);
 };
 
 class stream_message : public message
@@ -100,13 +101,13 @@ class add_stream : public stream_message, public control_message
 {
 public:
     add_stream(address addr, datagram::id_type id);
-    void operator()(udp_layer& a_udp_layer);
+    void operator()(udp_layer &a_udp_layer);
 };
 class del_stream : public stream_message, public control_message
 {
 public:
     del_stream(address addr, datagram::id_type id);
-    void operator()(udp_layer& a_udp_layer);
+    void operator()(udp_layer &a_udp_layer);
 };
 
 class new_stream : public stream_message
@@ -118,7 +119,7 @@ public:
 class data_message : public message
 {
 public:
-    data_message(msg_type type, address addr, datagram::id_type id, const std::string& data);
+    data_message(msg_type type, address addr, datagram::id_type id, const std::string &data);
 
 protected:
     address addr_;
@@ -129,21 +130,21 @@ protected:
 class recv_data : public data_message
 {
 public:
-    recv_data(address addr, datagram::id_type id, const std::string& data);
+    recv_data(address addr, datagram::id_type id, const std::string &data);
     operator std::string();
 };
 
 class send_data : public data_message, public control_message
 {
 public:
-    send_data(address addr, datagram::id_type id, const std::string& data);
-    void operator()(udp_layer& a_udp_layer);
+    send_data(address addr, datagram::id_type id, const std::string &data);
+    void operator()(udp_layer &a_udp_layer);
 };
 
 class error_message : public message, public info_message
 {
 public:
-    error_message(const std::string& info);
+    error_message(const std::string &info);
 
 protected:
     std::string info_;

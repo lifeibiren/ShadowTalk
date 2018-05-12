@@ -3,13 +3,13 @@
 
 #include "config.h"
 
-namespace sml {
+namespace sml
+{
 class configuration
 {
 public:
-    configuration(const std::string &id, const std::string &private_key,
-                  const std::string &public_key, uint16_t port,
-                  uint32_t timeout, uint32_t max_retries);
+    configuration(const std::string &id, const std::string &private_key, const std::string &public_key, uint16_t port,
+        uint32_t timeout, uint32_t max_retries);
 
     const std::string &id() const;
     const std::string &public_key() const;
@@ -18,8 +18,9 @@ public:
     uint32_t timeout() const;
     uint32_t max_retries() const;
 
-    void add_trusted_peer_public_key(const std::string& id, const std::string& public_key);
+    void add_trusted_peer_public_key(const std::string &id, const std::string &public_key);
     const std::string get_peer_public_key_by_id(const std::string &id) const;
+
 private:
     std::string id_;
     std::string pubkey_;

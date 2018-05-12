@@ -29,28 +29,29 @@
  */
 
 #include "config.h"
+#include "configuration.h"
 #include "message.h"
 #include "peer.h"
 #include "udp_layer.h"
-#include "configuration.h"
 
 namespace sml
 {
 class service
 {
 public:
-    service(asio::io_context& io_context, const configuration &conf);
+    service(asio::io_context &io_context, const configuration &conf);
 
     shared_ptr<message> query();
     void post(shared_ptr<message>);
 
-    asio::io_context& io_context();
+    asio::io_context &io_context();
 
-    configuration& conf();
+    configuration &conf();
+
 private:
     void msg_handler();
     configuration conf_;
-    asio::io_context& io_context_;
+    asio::io_context &io_context_;
     uint16_t port_;
     udp_layer udp_layer_;
 };

@@ -20,12 +20,12 @@ public:
 
     void generate_static_key_pairs();
     void generate_ephemeral_key_pairs();
-    void set_static_key_pairs(const std::string& static_priv_key_bytes, const std::string& static_pub_key_bytes);
-    void set_ephemeral_key_pairs(const std::string& eph_priv_key_bytes, const std::string& eph_pub_key_bytes);
-    void set_peer_pub_key_pairs(const std::string& static_pub_key_bytes, const std::string& eph_pub_key_bytes);
+    void set_static_key_pairs(const std::string &static_priv_key_bytes, const std::string &static_pub_key_bytes);
+    void set_ephemeral_key_pairs(const std::string &eph_priv_key_bytes, const std::string &eph_pub_key_bytes);
+    void set_peer_pub_key_pairs(const std::string &static_pub_key_bytes, const std::string &eph_pub_key_bytes);
     void generate_shared_key();
     std::string generate_content_encryption_key_and_cma();
-    void feed_peer_content_encryption_key_and_cma(const std::string& cek);
+    void feed_peer_content_encryption_key_and_cma(const std::string &cek);
     std::string content_encryption_key(); // CEK used by AES
     std::string ephemeral_priv_key() const;
     std::string ephemeral_pub_key() const;

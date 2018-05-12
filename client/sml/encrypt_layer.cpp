@@ -14,12 +14,12 @@ encrypt_layer::encrypt_layer(algorithm algo, sptr_string key)
     }
 }
 
-std::string encrypt_layer::encrypt(const std::string& data)
+std::string encrypt_layer::encrypt(const std::string &data)
 {
     return encryptor_->encrypt(data);
 }
 
-std::string encrypt_layer::decrypt(const std::string& data)
+std::string encrypt_layer::decrypt(const std::string &data)
 {
     return encryptor_->decrypt(data);
 }
