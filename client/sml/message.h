@@ -26,6 +26,7 @@ public:
 
     message() {}
     message(msg_type type);
+    msg_type type() const;
     virtual ~message();
 
 protected:
@@ -60,8 +61,8 @@ private:
 class peer_message : public message
 {
 public:
-    peer_message(msg_type type, address addr);
-
+    peer_message(msg_type type, const address &addr);
+    const address &addr() const;
 protected:
     address addr_;
 };
@@ -69,22 +70,24 @@ protected:
 class add_peer : public peer_message, public control_message
 {
 public:
-    add_peer(address addr);
-    virtual void operator()(udp_layer &a_udp_layer);
+    add_peer(const address &addr);
+    void operator()(udp_layer &a_udp_layer);
 };
 
 class del_peer : public peer_message, public control_message
 {
 public:
-    del_peer(address addr);
+    del_peer(const address &addr);
     void operator()(udp_layer &a_udp_layer);
 };
 
 class new_peer : public peer_message
 {
 public:
-    new_peer(address addr);
-    void operator()(udp_layer &a_udp_layer);
+    new_peer(const std::string &id, const address &addr);
+    const std::string &id() const;
+protected:
+    std::string id_;
 };
 
 class stream_message : public message
@@ -120,7 +123,9 @@ class data_message : public message
 {
 public:
     data_message(msg_type type, address addr, datagram::id_type id, const std::string &data);
-
+    const address &addr() const;
+    datagram::id_type id() const;
+    const std::string &data() const;
 protected:
     address addr_;
     datagram::id_type id_;

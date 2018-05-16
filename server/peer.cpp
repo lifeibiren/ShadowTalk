@@ -26,7 +26,7 @@ bool peer::dead() const
 }
 std::string peer::to_string() const
 {
-    return address_ + " " + std::to_string(port_) + '\n';
+    return address_ + ":" + std::to_string(port_);
 }
 // bool peer::operator=(const peer &r_peer)
 //{

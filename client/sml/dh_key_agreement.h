@@ -13,6 +13,15 @@
 
 namespace sml
 {
+inline const std::string hex_str_to_bytes(const std::string &hex)
+{
+    CryptoPP::Integer priv(hex.c_str());
+    std::unique_ptr<byte[]> priv_blk(new byte[priv.ByteCount()]);
+    priv.Encode(priv_blk.get(), priv.ByteCount());
+
+    return std::string((const char *)priv_blk.get(), priv.ByteCount());
+}
+
 class dh_key_agreement
 {
 public:

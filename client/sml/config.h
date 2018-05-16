@@ -4,6 +4,8 @@
 #include <list>
 #include <map>
 #include <string>
+#include <cinttypes>
+#include <string>
 
 #include <boost/any.hpp>
 #include <boost/array.hpp>
@@ -19,8 +21,6 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <cinttypes>
-#include <string>
 using namespace boost;
 using boost::make_shared;
 typedef shared_ptr<std::string> sptr_string;
@@ -28,6 +28,7 @@ typedef uint8_t byte;
 
 #include "logger.h"
 #include "ring.h"
+
 namespace sml
 {
 extern logger log;
@@ -39,7 +40,6 @@ class service;
 class encrypt_layer;
 class address;
 class logger;
-
 extern ring input_ring, output_ring;
 }
 
@@ -51,6 +51,7 @@ template <typename... Args> std::string string_format(const std::string &format,
     return std::string(buf.get(), buf.get() + size - 1);
 }
 
+#include "address.h"
 #include "exception.h"
 #include "utils.h"
 

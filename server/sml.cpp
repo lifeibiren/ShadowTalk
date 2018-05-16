@@ -80,8 +80,8 @@ const std::set<boost::shared_ptr<peer>>& sml::live_peers()
     {
         if ((*it)->dead())
         {
-            it = live_peers_.erase(it);
             peer_endpoint_bm_.right.erase(*it);
+            it = live_peers_.erase(it);
         }
         else
         {

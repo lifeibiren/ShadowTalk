@@ -9,7 +9,13 @@ namespace sml
 message::message(msg_type type)
     : type_(type)
 {}
+
 message::~message() {}
+
+message::msg_type message::type() const
+{
+    return type_;
+}
 
 add_trusted_peer_public_key::add_trusted_peer_public_key(const std::string &id, const std::string &public_key)
     : id_(id)
@@ -25,12 +31,17 @@ info_message::info_message(const std::string &info)
     : info_(info)
 {}
 
-peer_message::peer_message(msg_type type, address addr)
+peer_message::peer_message(msg_type type, const address &addr)
     : message(type)
     , addr_(addr)
 {}
 
-add_peer::add_peer(address addr)
+const address &peer_message::addr() const
+{
+    return addr_;
+}
+
+add_peer::add_peer(const address &addr)
     : peer_message(msg_type::add_peer, addr)
 {}
 
@@ -40,7 +51,7 @@ void add_peer::operator()(udp_layer &a_udp_layer)
     a_udp_layer.add_peer(addr_);
 }
 
-del_peer::del_peer(address addr)
+del_peer::del_peer(const address &addr)
     : peer_message(msg_type::del_peer, addr)
 {}
 
@@ -49,9 +60,14 @@ void del_peer::operator()(udp_layer &a_udp_layer)
     a_udp_layer.del_peer(addr_);
 }
 
-new_peer::new_peer(address addr)
+new_peer::new_peer(const std::string &id, const address &addr)
     : peer_message(msg_type::new_peer, addr)
 {}
+
+const std::string &new_peer::id() const
+{
+    return id_;
+}
 
 stream_message::stream_message(msg_type type, address addr, datagram::id_type id)
     : message(type)
@@ -95,6 +111,21 @@ data_message::data_message(msg_type type, address addr, datagram::id_type id, co
     , id_(id)
     , data_(data)
 {}
+
+const address &data_message::addr() const
+{
+    return addr_;
+}
+
+datagram::id_type data_message::id() const
+{
+    return id_;
+}
+
+const std::string &data_message::data() const
+{
+    return data_;
+}
 
 recv_data::recv_data(address addr, datagram::id_type id, const std::string &data)
     : data_message(msg_type::recv_data, addr, id, data)

@@ -1,11 +1,12 @@
 #include "udp_layer.h"
-#include "sml.h"
+#include "service.h"
 
 namespace sml
 {
 udp_layer::udp_layer(service &a_service)
     : service_(a_service)
     , socket_(service_.io_context(), asio::ip::udp::endpoint(asio::ip::udp::v4(), service_.conf().port()))
+    , default_filter_([](shared_ptr<std::string>, const address &){return true;})
 {
     start_receive();
 }
@@ -25,49 +26,51 @@ void udp_layer::handle_receive(const boost::system::error_code &error, std::size
         /*
          * distribute udp datagram to handlers
          */
-        shared_ptr<address> addr = make_shared<address>(remote_endpoint_);
-        auto it = handler_map_.find(addr);
-        if (it != handler_map_.end())
+        address addr(remote_endpoint_);
+        auto it = filter_map_.find(addr);
+        bool feed_peer = true;
+        if (it != filter_map_.end())
         {
-            (it->second)(received_message, addr);
+            feed_peer = (it->second)(received_message, addr);
         }
-        for (auto it = default_handler_list_.begin(); it != default_handler_list_.end(); it++)
+        else
         {
-            (*it)(received_message, addr);
+            feed_peer = default_filter_(received_message, addr);
         }
 
-        /*
-         * feed peers
-         */
-        peer_map_type::iterator peer_it = peer_map_.find(*addr);
-        if (peer_it == peer_map_.end())
+        if (feed_peer)
         {
-            peer_map_.insert(peer_map_type::value_type(*addr, make_shared<peer>(service_.io_context(), *this, *addr)));
-            peer_it = peer_map_.find(*addr);
-            // send new peer message
-            output_ring.put(make_shared<new_peer>(*addr));
+            /*
+             * feed peers
+             */
+            peer_map_type::iterator peer_it = peer_map_.find(addr);
+            if (peer_it == peer_map_.end())
+            {
+                peer_map_.insert(peer_map_type::value_type(addr, make_shared<peer>(service_.io_context(), *this, addr)));
+                peer_it = peer_map_.find(addr);
+            }
+            peer_it->second->feed(received_message);
         }
-        peer_it->second->feed(received_message);
 
         start_receive();
     }
 }
 
-void udp_layer::send_to(boost::shared_ptr<std::string> msg, boost::shared_ptr<address> addr, handler_type handler)
+void udp_layer::send_to(boost::shared_ptr<std::string> msg, const address &addr, handler_type handler)
 {
-    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(addr->ip()), addr->port());
+    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(addr.ip()), addr.port());
     socket_.async_send_to(boost::asio::buffer(*msg), endpoint,
         boost::bind(&udp_layer::handle_send, this, boost::asio::placeholders::error, msg, addr, handler));
 }
 
-void udp_layer::register_handler(handler_type handler, shared_ptr<address> addr_hits)
+void udp_layer::register_filter(filter_type filter, const address &addr_hits)
 {
-    handler_map_[addr_hits] = handler;
+    filter_map_[addr_hits] = filter;
 }
 
-void udp_layer::register_handler(handler_type handler)
+void udp_layer::register_default_filter(filter_type filter)
 {
-    default_handler_list_.push_back(handler);
+    default_filter_ = filter;
 }
 
 void udp_layer::add_peer(const address &addr)
@@ -104,7 +107,7 @@ configuration &udp_layer::conf() const
 }
 
 void udp_layer::handle_send(const boost::system::error_code &error, shared_ptr<std::string> message,
-    shared_ptr<address> addr, handler_type handler)
+    const address &addr, handler_type handler)
 {
     if (!error)
     {

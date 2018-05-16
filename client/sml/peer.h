@@ -22,8 +22,6 @@ public:
     shared_ptr<stream> add_stream(id_type id);
     void del_stream(id_type id);
     shared_ptr<stream> get_stream(id_type id);
-    //    void async_accept_new_stream(stream_handler_type handler);
-    //    std::vector<id_type> new_stream_id_vec() const;
     void feed(shared_ptr<std::string> data);
     void send_datagram(shared_ptr<datagram> data);
     const address &addr() const;
@@ -81,6 +79,7 @@ private:
     udp_layer &udp_layer_;
     const address addr_;
     dh_key_agreement dh_key_agreement_;
+    std::string id_;
     std::string peer_spub_;
     shared_ptr<datagram> sent_echo_datagram_;
     shared_ptr<datagram> to_send_; // used in key agreement

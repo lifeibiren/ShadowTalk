@@ -20,17 +20,21 @@ peer::peer(asio::io_context &io_context, udp_layer &a_udp_layer, const address &
     //                          "c8b7808a96b4315ddd6cf8cc8f97b938dbfa6b31d3d8"
     //                          "2df84c31f6ac55e5362ee417538eb34b419c");
 
-    CryptoPP::Integer priv(udp_layer_.conf().private_key().c_str()), pub(udp_layer_.conf().public_key().c_str());
-    std::cout << "spriv " << std::hex << priv << std::endl;
-    std::cout << "spub " << std::hex << pub << std::endl;
-    std::unique_ptr<byte[]> priv_blk(new byte[priv.ByteCount()]);
-    std::unique_ptr<byte[]> pub_blk(new byte[pub.ByteCount()]);
-    priv.Encode(priv_blk.get(), priv.ByteCount());
-    pub.Encode(pub_blk.get(), pub.ByteCount());
-    dh_key_agreement_.set_static_key_pairs(std::string((const char *)priv_blk.get(), priv.ByteCount()),
-        std::string((const char *)pub_blk.get(), pub.ByteCount()));
-    peer_spub_ = std::string((const char *)pub_blk.get(), pub.ByteCount());
+//    CryptoPP::Integer priv(udp_layer_.conf().private_key().c_str()), pub(udp_layer_.conf().public_key().c_str());
+//    std::cout << "spriv " << std::hex << priv << std::endl;
+//    std::cout << "spub " << std::hex << pub << std::endl;
+//    std::unique_ptr<byte[]> priv_blk(new byte[priv.ByteCount()]);
+//    std::unique_ptr<byte[]> pub_blk(new byte[pub.ByteCount()]);
+//    priv.Encode(priv_blk.get(), priv.ByteCount());
+//    pub.Encode(pub_blk.get(), pub.ByteCount());
+//    dh_key_agreement_.set_static_key_pairs(std::string((const char *)priv_blk.get(), priv.ByteCount()),
+//        std::string((const char *)pub_blk.get(), pub.ByteCount()));
 
+    //peer_spub_ = std::string((const char *)pub_blk.get(), pub.ByteCount());
+
+    dh_key_agreement_.set_static_key_pairs(hex_str_to_bytes(udp_layer_.conf().private_key()),
+                                           hex_str_to_bytes(udp_layer_.conf().public_key()));
+    //peer_spub_ = convert_hex_str_to_bytes(udp_layer_.conf().public_key());
     send_hello();
 }
 
@@ -140,6 +144,8 @@ void peer::send_hello()
 
 void peer::received_hello_handler(shared_ptr<datagram> new_datagram)
 {
+    id_ = new_datagram->payload_;
+    peer_spub_ = hex_str_to_bytes(udp_layer_.conf().get_peer_public_key_by_id(id_));
     current_state_ |= received_hello;
     send_ack();
 }
@@ -242,6 +248,8 @@ void peer::echo_handler(shared_ptr<datagram> new_datagram)
     {
         datagram_handler_ = boost::bind(&peer::established_handler, this, _1);
         log << "established\n";
+        // send new peer message
+        output_ring.put(boost::make_shared<new_peer>(id_, addr_));
     }
 }
 
@@ -287,6 +295,7 @@ void peer::established_handler(shared_ptr<datagram> new_datagram)
     {
         stream_map_.insert(stream_map_type::value_type(
             new_datagram->id_, make_shared<stream>(stream(io_context_, *this, new_datagram->id_))));
+        it = stream_map_.find(new_datagram->id_);
         // send new stream message
         output_ring.put(make_shared<new_stream>(addr_, new_datagram->id_));
     }
@@ -313,6 +322,7 @@ void peer::send_datagram(shared_ptr<datagram> msg)
 
 void peer::send_raw_datagram(shared_ptr<datagram> msg)
 {
+    std::cout << "send:\n" << std::string(*msg) << std::endl;
     shared_ptr<std::string> bytes = (shared_ptr<std::string>)(*msg);
     do_send(bytes);
 }
@@ -336,9 +346,10 @@ void peer::retransmit_raw_datagram(shared_ptr<datagram> msg, const system::error
 
 void peer::do_send(shared_ptr<std::string> bytes)
 {
+    std::cout<<"send to"<<addr_.ip()<<":"<<addr_.port()<<std::endl;
     // TODO: add handler
     udp_layer_.send_to(
-        bytes, make_shared<address>(addr_), [](shared_ptr<std::string> msg, shared_ptr<address> addr) {});
+        bytes, addr_, [](shared_ptr<std::string> msg, const address &addr) {});
 }
 
 const address &peer::addr() const
@@ -370,7 +381,6 @@ void peer::hello_handler(shared_ptr<datagram> new_datagram)
 
 void peer::public_key_exchange_handler(shared_ptr<datagram> new_datagram)
 {
-    log << __PRETTY_FUNCTION__ << "\n";
     if (new_datagram->type_ == datagram::msg_type::public_key)
     {
         received_public_key_handler(new_datagram);

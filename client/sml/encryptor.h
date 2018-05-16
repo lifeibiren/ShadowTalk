@@ -1,7 +1,7 @@
 #ifndef ENCRYPTOR_H
 #define ENCRYPTOR_H
 
-#include "sml.h"
+#include "service.h"
 
 namespace sml
 {

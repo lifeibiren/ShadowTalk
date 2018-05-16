@@ -28,6 +28,11 @@ const CryptoPP::Integer dh_key_agreement::ref_q("0xF518AA8781A8DF278ABA4E7D64B7C
 // dh-unified.zip. Also see http://www.cryptopp.com/wiki/Diffie-Hellman
 // and http://www.cryptopp.com/wiki/Security_level .
 
+inline std::unique_ptr<CryptoPP::SecByteBlock> convert_bytes_to_SecByteBlock(const std::string bytes)
+{
+    return boost::make_unique<CryptoPP::SecByteBlock>((const byte *)bytes.c_str(), bytes.size());
+}
+
 dh_key_agreement::dh_key_agreement()
     : dh(boost::make_unique<CryptoPP::DH>())
 {
@@ -69,28 +74,35 @@ void dh_key_agreement::generate_ephemeral_key_pairs()
 void dh_key_agreement::set_static_key_pairs(
     const std::string &static_priv_key_bytes, const std::string &static_pub_key_bytes)
 {
-    spriv = boost::make_unique<CryptoPP::SecByteBlock>(
-        (const byte *)static_priv_key_bytes.c_str(), static_priv_key_bytes.size());
-    spub = boost::make_unique<CryptoPP::SecByteBlock>(
-        (const byte *)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
+    spriv = convert_bytes_to_SecByteBlock(static_priv_key_bytes);
+    spub = convert_bytes_to_SecByteBlock(static_pub_key_bytes);
+
+//    spriv = boost::make_unique<CryptoPP::SecByteBlock>(
+//        (const byte *)static_priv_key_bytes.c_str(), static_priv_key_bytes.size());
+//    spub = boost::make_unique<CryptoPP::SecByteBlock>(
+//        (const byte *)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
 }
 
 void dh_key_agreement::set_ephemeral_key_pairs(
     const std::string &eph_priv_key_bytes, const std::string &eph_pub_key_bytes)
 {
-    epriv = boost::make_unique<CryptoPP::SecByteBlock>(
-        (const byte *)eph_priv_key_bytes.c_str(), eph_priv_key_bytes.size());
-    epub
-        = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
+    epriv = convert_bytes_to_SecByteBlock(eph_priv_key_bytes);
+    epub = convert_bytes_to_SecByteBlock(eph_pub_key_bytes);
+//    epriv = boost::make_unique<CryptoPP::SecByteBlock>(
+//        (const byte *)eph_priv_key_bytes.c_str(), eph_priv_key_bytes.size());
+//    epub
+//        = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
 }
 
 void dh_key_agreement::set_peer_pub_key_pairs(
     const std::string &static_pub_key_bytes, const std::string &eph_pub_key_bytes)
 {
-    peer_spub = boost::make_unique<CryptoPP::SecByteBlock>(
-        (const byte *)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
-    peer_epub
-        = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
+    peer_spub = convert_bytes_to_SecByteBlock(static_pub_key_bytes);
+    peer_epub = convert_bytes_to_SecByteBlock(eph_pub_key_bytes);
+//    peer_spub = boost::make_unique<CryptoPP::SecByteBlock>(
+//        (const byte *)static_pub_key_bytes.c_str(), static_pub_key_bytes.size());
+//    peer_epub
+//        = boost::make_unique<CryptoPP::SecByteBlock>((const byte *)eph_pub_key_bytes.c_str(), eph_pub_key_bytes.size());
 }
 
 void dh_key_agreement::generate_shared_key()

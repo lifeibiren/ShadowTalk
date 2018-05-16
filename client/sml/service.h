@@ -1,5 +1,5 @@
-#ifndef SML_H
-#define SML_H
+#ifndef SERVICE_H_
+#define SERVICE_H_
 
 /*
  * -------------
@@ -48,12 +48,19 @@ public:
 
     configuration &conf();
 
+    shared_ptr<std::vector<address>> peer_list() const;
 private:
     void msg_handler();
+    void query_server(const boost::system::error_code &ec);
+    bool server_datagram_filter(shared_ptr<std::string> msg, const address &addr);
+
     configuration conf_;
     asio::io_context &io_context_;
-    uint16_t port_;
     udp_layer udp_layer_;
+    asio::deadline_timer timer_;
+    shared_ptr<std::vector<address>> peer_list_;
+    shared_ptr<std::vector<address>> new_peer_list_;
+    mutable mutex mutex_;
 };
 } // namespace sml
 

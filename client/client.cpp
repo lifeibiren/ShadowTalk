@@ -1,5 +1,4 @@
-#include "sml/sml.h"
-#include "udp_service.h"
+#include "sml/service.h"
 #include <iostream>
 
 void handle_received_message(boost::shared_ptr<std::string> msg)
@@ -27,26 +26,33 @@ void timer_handler(asio::deadline_timer &timer, shared_ptr<sml::stream> &s)
     timer.async_wait(bind(timer_handler, ref(timer), ref(s)));
 }
 
-const char *priv = "0xed4b008b62dd2563b6406240ba55ee230bda4c1";
-const char *pub = "0x6e794b0ea27adebc21bcbe0c2ecc1d3cd92baabc91f3"
+const char *priv = "ed4b008b62dd2563b6406240ba55ee230bda4c1h";
+const char *pub = "6e794b0ea27adebc21bcbe0c2ecc1d3cd92baabc91f3"
                   "f375020b8ad07220ca20beffbee1d359de88d820ff1b"
                   "daadb868f2fdec148a9bcfd34b49f4a264a3ab8c9051"
                   "44eda1ef5cf645ddade075e63748597128f83f5ec290"
                   "c8b7808a96b4315ddd6cf8cc8f97b938dbfa6b31d3d8"
-                  "2df84c31f6ac55e5362ee417538eb34b419c";
+                  "2df84c31f6ac55e5362ee417538eb34b419ch";
 
 asio::io_context io_context;
 int main(int argc, char **args)
 {
     uint16_t port = atoi(args[1]);
-    sml::configuration conf(args[2], priv, pub, port, 30, 5);
+    sml::configuration::trusted_peer_key_map_type pk_map;
+    pk_map.insert(sml::configuration::trusted_peer_key_map_type::value_type("Bob", pub));
+    pk_map.insert(sml::configuration::trusted_peer_key_map_type::value_type("John", pub));
+
+    sml::configuration conf(std::string("45.76.158.199:6666"), args[2], priv, pub, port, 30, 5, pk_map);
     sml::service service(io_context, conf);
     thread t(bind(&asio::io_context::run, &io_context));
 
     sml::address addr("127.0.0.1", port ^ 1);
-    service.post(make_shared<sml::add_peer>(addr));
-    service.post(make_shared<sml::add_stream>(addr, 0));
-    service.post(make_shared<sml::send_data>(addr, 0, "Hello World\n"));
+    if (port == 8000)
+    {
+        service.post(make_shared<sml::add_peer>(addr));
+        service.post(make_shared<sml::add_stream>(addr, 0));
+        service.post(make_shared<sml::send_data>(addr, 0, "Hello World\n"));
+    }
 
     while (1)
     {
