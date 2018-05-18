@@ -61,7 +61,7 @@ void del_peer::operator()(udp_layer &a_udp_layer)
 }
 
 new_peer::new_peer(const std::string &id, const address &addr)
-    : peer_message(msg_type::new_peer, addr)
+    : peer_message(msg_type::new_peer, addr), id_(id)
 {}
 
 const std::string &new_peer::id() const

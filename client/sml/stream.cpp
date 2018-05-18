@@ -58,31 +58,36 @@ void stream::feed(shared_ptr<datagram> new_datagram)
 
 void stream::send(const std::string &data)
 {
-    send_data_list_.push_back(data);
+//    send_data_list_.push_back(data);
 
-    send_one_piece();
-}
+//    send_one_piece();
+//}
 
-void stream::send_one_piece()
-{
-    // if datagram queue is non-empty, ignore
+//void stream::send_one_piece()
+//{
+    // if to-send queue is empty, nothing to do
+//    if (send_data_list_.empty())
+//    {
+//        return;
+//    }
+
+//    const std::string &send_data_ = *(send_data_list_.begin());
+
+    // Get the maximum key
+    size_t current_max_offset;
     if (!send_datagram_queue_.empty())
     {
-        return;
+        current_max_offset = send_datagram_queue_.rbegin()->first;
     }
-
-    // if to-send queue is empty, nothing to do
-    if (send_data_list_.empty())
+    else
     {
-        return;
+        current_max_offset = send_offset_;
     }
-
-    const std::string &send_data_ = *(send_data_list_.begin());
 
     size_t offset = 0;
-    while (offset < send_data_.size())
+    while (offset < data.size())
     {
-        size_t left_length = send_data_.size() - offset;
+        size_t left_length = data.size() - offset;
         size_t seg_length = left_length > segment_max_ ? segment_max_ : left_length;
 
         shared_ptr<datagram> new_datagram = boost::make_shared<datagram>();
@@ -90,35 +95,39 @@ void stream::send_one_piece()
         new_datagram->type_ = datagram::msg_type::data;
         new_datagram->id_ = this->id_;
         new_datagram->length_ = seg_length;
-        new_datagram->offset_ = offset;
-        new_datagram->payload_ = send_data_.substr(offset, seg_length);
+        new_datagram->offset_ = offset + current_max_offset;
+        new_datagram->payload_ = data.substr(offset, seg_length);
 
         send_datagram_queue_.insert(datagram_map_type::value_type(new_datagram->offset_, new_datagram));
 
         offset += seg_length;
     }
 
-    send_data_list_.pop_front();
+//    send_data_list_.pop_front();
 
     send_one_datagram();
 }
 
 void stream::send_one_datagram()
 {
+    // cancel retransmit timer
     timer.cancel();
     // remove datagrams already sent
-    datagram_map_type::iterator it = send_datagram_queue_.begin();
-    while (it != send_datagram_queue_.end() && it->first < send_offset_)
+
+    for (datagram_map_type::iterator it = send_datagram_queue_.begin();
+         it != send_datagram_queue_.end() && it->first < send_offset_;
+         )
     {
         it = send_datagram_queue_.erase(it);
     }
-    // if all are sent
+    // if all are sent, do nothing
     if (send_datagram_queue_.empty())
     {
-        send_one_piece();
+//        send_one_piece();
         return;
     }
 
+    // make a copy and send
     shared_ptr<datagram> to_send = send_datagram_queue_.begin()->second;
     shared_ptr<datagram> copy = boost::make_shared<datagram>();
     *copy = *to_send;
