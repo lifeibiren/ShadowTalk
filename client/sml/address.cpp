@@ -51,6 +51,16 @@ bool address::operator==(const address &val) const
         return false;
     }
 }
+bool address::operator!=(const address &val) const
+{
+    return !(*this == val);
+}
+bool address::operator<(const address &val) const
+{
+    return ip_addr_ < val.ip_addr_ ?
+                true :
+                (port_ < val.port_ ? true : false);
+}
 size_t address::hash() const
 {
     std::size_t seed = 0;

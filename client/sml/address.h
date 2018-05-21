@@ -18,6 +18,8 @@ public:
     uint16_t port() const;
     void set_port(uint16_t port);
     bool operator==(const address &val) const;
+    bool operator!=(const address &val) const;
+    bool operator<(const address &val) const;
 
     size_t hash() const;
     std::string to_string() const;

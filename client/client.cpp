@@ -42,7 +42,7 @@ int main(int argc, char **args)
     pk_map.insert(sml::configuration::trusted_peer_key_map_type::value_type("Bob", pub));
     pk_map.insert(sml::configuration::trusted_peer_key_map_type::value_type("John", pub));
 
-    sml::configuration conf(std::string("45.76.158.199:6666"), args[2], priv, pub, port, 30, 5, pk_map);
+    sml::configuration conf(std::string("127.0.0.1:6666"), args[2], priv, pub, port, 30, 5, pk_map);
     sml::service service(io_context, conf);
     thread t(bind(&asio::io_context::run, &io_context));
 
