@@ -19,7 +19,7 @@ public:
     boost::shared_ptr<std::string> content() const;
 
 private:
-    friend class sml;
+    friend class service;
     message(boost::shared_ptr<peer> src_peer = boost::shared_ptr<peer>(nullptr),
         boost::shared_ptr<std::string> content = boost::shared_ptr<std::string>(nullptr),
         boost::shared_ptr<peer> dst_peer = boost::shared_ptr<peer>(nullptr));

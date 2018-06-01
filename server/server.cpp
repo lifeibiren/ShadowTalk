@@ -13,10 +13,11 @@
 
 using boost::asio::ip::udp;
 
-whisper::sml sml_(6666);
+whisper::service sml_(6666);
 void handle_client_request(boost::shared_ptr<whisper::message> msg)
 {
-    for (auto it = sml_.live_peers().begin(); it != sml_.live_peers().end(); ++it)
+    auto live_peers = sml_.live_peers();
+    for (auto it = live_peers.begin(); it != live_peers.end(); ++it)
     {
         boost::shared_ptr<std::string> new_message(new std::string((*it)->to_string()));
         boost::shared_ptr<whisper::message> new_msg = sml_.prepare_empty_message();

@@ -16,13 +16,13 @@
 
 namespace whisper
 {
-class sml
+class service
 {
 public:
     typedef boost::signals2::signal<void(boost::shared_ptr<message> msg)> message_signal;
     typedef message_signal::slot_type message_signal_handler;
 
-    sml(unsigned short port);
+    service(unsigned short port);
     void send_message(boost::shared_ptr<message> msg);
     void register_receive_handler(const message_signal_handler& slot);
     void register_send_handler(const message_signal_handler& slot);
@@ -57,7 +57,7 @@ private:
 
     std::set<boost::shared_ptr<peer>> live_peers_;
 
-    std::list<boost::shared_ptr<peer>> peer_list_;
+//    std::list<boost::shared_ptr<peer>> peer_list_;
 
     message_signal receive_signal_;
     message_signal send_signal_;
