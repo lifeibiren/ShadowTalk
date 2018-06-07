@@ -26,8 +26,8 @@ void handle_client_request(boost::shared_ptr<whisper::message> msg)
         sml_.send_message(new_msg);
     }
 
-    std::cout << std::to_string(msg->content()->size()) + " bytes received" << std::endl;
-    std::cout << "Requests detected" << std::endl;
+//    std::cout << std::to_string(msg->content()->size()) + " bytes received" << std::endl;
+//    std::cout << "Requests detected" << std::endl;
 }
 int main(int argc, char** args)
 {

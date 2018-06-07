@@ -19,14 +19,22 @@ namespace whisper
 class service
 {
 public:
+    template <class Rel> struct peer_comp
+    {
+        bool operator()(const Rel& ra, const Rel& rb) const
+        {
+            return (*ra) < (*rb);
+        }
+    };
     typedef boost::signals2::signal<void(boost::shared_ptr<message> msg)> message_signal;
     typedef message_signal::slot_type message_signal_handler;
+    typedef std::set<boost::shared_ptr<peer>, peer_comp<boost::shared_ptr<peer>>> live_peers_set_type;
 
     service(unsigned short port);
     void send_message(boost::shared_ptr<message> msg);
     void register_receive_handler(const message_signal_handler& slot);
     void register_send_handler(const message_signal_handler& slot);
-    const std::set<boost::shared_ptr<peer>>& live_peers();
+    const live_peers_set_type& live_peers();
 
     boost::shared_ptr<message> prepare_empty_message() const;
 
@@ -43,10 +51,6 @@ private:
 
     boost::shared_ptr<peer> self_;
 
-    template <class Rel> struct peer_comp
-    {
-        bool operator()(const Rel& ra, const Rel& rb) const { return (*ra) < (*rb); }
-    };
     typedef boost::bimap<boost::bimaps::set_of<boost::asio::ip::udp::endpoint>,
         boost::bimaps::set_of<boost::shared_ptr<peer>, peer_comp<boost::shared_ptr<peer>>>>
         peer_endpoint_bm_type;
@@ -55,7 +59,7 @@ private:
     typedef std::map<boost::shared_ptr<std::string>, boost::shared_ptr<message>> to_be_sent_map_type;
     to_be_sent_map_type to_be_sent_;
 
-    std::set<boost::shared_ptr<peer>> live_peers_;
+    live_peers_set_type live_peers_;
 
 //    std::list<boost::shared_ptr<peer>> peer_list_;
 

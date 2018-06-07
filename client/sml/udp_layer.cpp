@@ -85,7 +85,7 @@ void udp_layer::del_peer(const address &addr)
     {
         output_ring.put(make_shared<error_message>("no such peer\n"));
     }
-    else if (ret > 0)
+    else if (ret > 1)
     {
         throw unknown_error();
     }

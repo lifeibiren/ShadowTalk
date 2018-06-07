@@ -20,6 +20,10 @@ unsigned int peer::port() const
 {
     return port_;
 }
+void peer::update()
+{
+    last_beat_ = std::time(NULL);
+}
 bool peer::dead() const
 {
     return std::time(NULL) - last_beat_ > 30;

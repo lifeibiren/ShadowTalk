@@ -11,7 +11,7 @@
 
 namespace sml
 {
-class peer
+class peer : public enable_shared_from_this<peer>
 {
 public:
     typedef boost::function<void(shared_ptr<message>)> handler_type;
@@ -25,6 +25,7 @@ public:
     void feed(shared_ptr<std::string> data);
     void send_datagram(shared_ptr<datagram> data);
     const address &addr() const;
+    void reset();
 
 private:
     void send_raw_datagram(shared_ptr<datagram> msg);

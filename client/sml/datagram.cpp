@@ -126,4 +126,11 @@ shared_ptr<datagram> datagram::create_echo_back(const datagram &echo_datagram)
     p->type_ = msg_type::echo_back;
     return p;
 }
+
+shared_ptr<datagram> datagram::create_abort()
+{
+    shared_ptr<datagram> p = boost::make_shared<datagram>();
+    p->type_ = msg_type::abort;
+    return p;
+}
 } // namespace shadowtalk

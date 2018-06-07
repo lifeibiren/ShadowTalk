@@ -59,6 +59,7 @@ void service::receive_handler(boost::shared_ptr<std::string> bytes, boost::asio:
     else
     {
         msg->set_src_peer(it->second);
+        it->second->update();
     }
     receive_signal_(msg);
 }
@@ -70,11 +71,9 @@ void service::send_handler(boost::shared_ptr<std::string> bytes, boost::asio::ip
     {
         send_signal_(it->second);
         to_be_sent_.erase(it);
-        std::cout << "deleted with " << to_be_sent_.size() << " left" << std::endl;
-        std::cout.flush();
     }
 }
-const std::set<boost::shared_ptr<peer>>& service::live_peers()
+const service::live_peers_set_type& service::live_peers()
 {
     for (std::set<boost::shared_ptr<peer>>::iterator it = live_peers_.begin(); it != live_peers_.end();)
     {
@@ -88,6 +87,8 @@ const std::set<boost::shared_ptr<peer>>& service::live_peers()
             ++it;
         }
     }
+    std::cout<<live_peers_.size()<<std::endl;
+    std::cout.flush();
     return live_peers_;
 }
 } // namespace shadowtalk

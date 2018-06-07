@@ -13,6 +13,7 @@ public:
     peer(const std::string& address, unsigned int port);
     const std::string& address() const;
     unsigned int port() const;
+    void update();
     bool dead() const;
     std::string to_string() const;
 

@@ -264,9 +264,10 @@ void peer::established_handler(shared_ptr<datagram> new_datagram)
     if (new_datagram->type_ == datagram::msg_type::hello)
     {
         // hello also means reset
-        current_state_ = initial;
-        received_hello_handler(new_datagram);
+        reset();
+        current_state_ = received_hello;
         send_hello();
+        received_hello_handler(new_datagram);
         return;
     }
     else if (new_datagram->type_ == datagram::msg_type::echo)
@@ -279,6 +280,13 @@ void peer::established_handler(shared_ptr<datagram> new_datagram)
     {
         // handle echo back
         received_echo_back_handler(new_datagram);
+        return;
+    }
+    else if (new_datagram->type_ == datagram::msg_type::abort)
+    {
+        auto self(shared_from_this());
+        // handle abort
+        udp_layer_.del_peer(addr_);
         return;
     }
 
@@ -403,5 +411,20 @@ void peer::public_key_exchange_handler(shared_ptr<datagram> new_datagram)
     {
         public_key_exchange_complete_handler();
     }
+}
+
+void peer::reset()
+{
+    current_state_ = initial;
+    timer_.cancel();
+    dh_key_agreement_.set_static_key_pairs(hex_str_to_bytes(udp_layer_.conf().private_key()),
+                                           hex_str_to_bytes(udp_layer_.conf().public_key()));
+    sent_echo_datagram_ = nullptr;
+    to_send_ = nullptr; // used in key agreement
+    key_ = nullptr;
+    encrypt_layer_ = nullptr;
+    stream_map_.clear();
+    send_msg_ = nullptr;
+    recv_msg_ = nullptr;
 }
 }

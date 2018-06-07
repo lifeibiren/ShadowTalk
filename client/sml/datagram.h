@@ -48,6 +48,7 @@ public:
     static shared_ptr<datagram> create_ack(id_type id, offset_type offset);
     static shared_ptr<datagram> create_echo(const std::string &content);
     static shared_ptr<datagram> create_echo_back(const datagram &echo_datagram);
+    static shared_ptr<datagram> create_abort();
 };
 } // namespace shadowtalk
 
