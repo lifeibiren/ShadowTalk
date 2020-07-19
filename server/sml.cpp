@@ -5,14 +5,14 @@
 
 namespace whisper
 {
-service::service(unsigned short port)
+UdpService::UdpService(unsigned short port)
     : server_(io_service_, port)
     , thread_ptr_(new boost::thread(boost::bind(&boost::asio::io_service::run, &io_service_, thread_err_)))
 {
-    server_.register_receive_handler(boost::bind(&service::receive_handler, this, _1, _2, _3));
-    server_.register_send_handler(boost::bind(&service::send_handler, this, _1, _2, _3));
+    server_.register_receive_handler(boost::bind(&UdpService::receive_handler, this, _1, _2, _3));
+    server_.register_send_handler(boost::bind(&UdpService::send_handler, this, _1, _2, _3));
 }
-void service::send_message(boost::shared_ptr<message> msg)
+void UdpService::send_message(boost::shared_ptr<message> msg)
 {
     to_be_sent_.insert(to_be_sent_map_type::value_type(msg->content(), msg));
 
@@ -30,19 +30,19 @@ void service::send_message(boost::shared_ptr<message> msg)
         server_.send_to(msg->content(), it->second);
     }
 }
-void service::register_receive_handler(const message_signal_handler& slot)
+void UdpService::register_receive_handler(const message_signal_handler& slot)
 {
     receive_signal_.connect(slot);
 }
-void service::register_send_handler(const message_signal_handler& slot)
+void UdpService::register_send_handler(const message_signal_handler& slot)
 {
     send_signal_.connect(slot);
 }
-boost::shared_ptr<message> service::prepare_empty_message() const
+boost::shared_ptr<message> UdpService::prepare_empty_message() const
 {
     return boost::shared_ptr<message>(new message(self_));
 }
-void service::receive_handler(boost::shared_ptr<std::string> bytes, boost::asio::ip::udp::endpoint& remote_endpoint,
+void UdpService::receive_handler(boost::shared_ptr<std::string> bytes, boost::asio::ip::udp::endpoint& remote_endpoint,
     const boost::system::error_code& error)
 {
     boost::shared_ptr<message> msg = prepare_empty_message();
@@ -63,7 +63,7 @@ void service::receive_handler(boost::shared_ptr<std::string> bytes, boost::asio:
     }
     receive_signal_(msg);
 }
-void service::send_handler(boost::shared_ptr<std::string> bytes, boost::asio::ip::udp::endpoint& remote_endpoint,
+void UdpService::send_handler(boost::shared_ptr<std::string> bytes, boost::asio::ip::udp::endpoint& remote_endpoint,
     const boost::system::error_code& error)
 {
     to_be_sent_map_type::iterator it = to_be_sent_.find(bytes);
@@ -73,7 +73,7 @@ void service::send_handler(boost::shared_ptr<std::string> bytes, boost::asio::ip
         to_be_sent_.erase(it);
     }
 }
-const service::live_peers_set_type& service::live_peers()
+const UdpService::live_peers_set_type& UdpService::live_peers()
 {
     for (std::set<boost::shared_ptr<peer>>::iterator it = live_peers_.begin(); it != live_peers_.end();)
     {

@@ -16,7 +16,7 @@
 
 namespace whisper
 {
-class service
+class UdpService
 {
 public:
     template <class Rel> struct peer_comp
@@ -30,7 +30,7 @@ public:
     typedef message_signal::slot_type message_signal_handler;
     typedef std::set<boost::shared_ptr<peer>, peer_comp<boost::shared_ptr<peer>>> live_peers_set_type;
 
-    service(unsigned short port);
+    UdpService(unsigned short port);
     void send_message(boost::shared_ptr<message> msg);
     void register_receive_handler(const message_signal_handler& slot);
     void register_send_handler(const message_signal_handler& slot);

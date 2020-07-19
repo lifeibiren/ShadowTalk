@@ -13,7 +13,7 @@
 
 using boost::asio::ip::udp;
 
-whisper::service sml_(6666);
+whisper::UdpService sml_(6666);
 void handle_client_request(boost::shared_ptr<whisper::message> msg)
 {
     auto live_peers = sml_.live_peers();
