@@ -105,3 +105,12 @@ CMakeLists.txt.user
 *.dll
 *.exe
 
+# ccls
+.ccls-cache
+
+# vscode
+.vscode
+compile_commands.json
+
+# build
+build/

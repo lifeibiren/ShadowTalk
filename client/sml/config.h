@@ -1,10 +1,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <cinttypes>
 #include <list>
 #include <map>
-#include <string>
-#include <cinttypes>
 #include <string>
 
 #include <boost/any.hpp>
@@ -43,7 +42,8 @@ class logger;
 extern ring input_ring, output_ring;
 }
 
-template <typename... Args> std::string string_format(const std::string &format, Args... args)
+template <typename... Args>
+std::string string_format(const std::string &format, Args... args)
 {
     size_t size = snprintf(nullptr, 0, format.c_str(), args...) + 1;
     std::unique_ptr<char[]> buf(new char[size]);
