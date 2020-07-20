@@ -11,7 +11,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/endian/endian.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <boost/function.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/make_unique.hpp>

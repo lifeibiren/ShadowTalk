@@ -79,6 +79,8 @@ int main(int argc, char **args)
 #include <functional>
 #include <iostream>
 
+#include "Message.hpp"
+
 using boost::asio::ip::tcp;
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -140,23 +142,32 @@ private:
         std::cin.getline(request_, max_length);
         size_t request_length = std::strlen(request_);
 
-        boost::asio::async_write(socket_, boost::asio::buffer(request_, request_length),
-            [this](const boost::system::error_code &error, std::size_t length) {
+        auto m = Message::CreateMessage(Message::MessageType::LIST_PEERS);
+        auto buf = Message::ToBytes(m);
+
+        boost::asio::async_write(
+            socket_, boost::asio::buffer(buf), [this](const boost::system::error_code &error, std::size_t length) {
                 if (!error) {
-                    receive_response(length);
+                    receive_response();
                 } else {
                     std::cout << "Write failed: " << error.message() << "\n";
                 }
             });
     }
 
-    void receive_response(std::size_t length) {
-        boost::asio::async_read(socket_, boost::asio::buffer(reply_, length),
+    void receive_response() {
+       socket_.async_read_some(boost::asio::buffer(reply_, sizeof(reply_)),
             [this](const boost::system::error_code &error, std::size_t length) {
                 if (!error) {
-                    std::cout << "Reply: ";
-                    std::cout.write(reply_, length);
-                    std::cout << "\n";
+                    auto ret = ctx_.Feed(std::vector<char>(reply_, reply_ + length));
+                    std::cout<<"Read data of "<<length <<" bytes"<<"\n";
+                    if (ret) {
+                        std::cout << "Reply: ";
+                        std::cout.write(ret.value().bytes.data(), ret.value().bytes.size());
+                        std::cout << "\n";
+                    } else {
+                        receive_response();
+                    }
                 } else {
                     std::cout << "Read failed: " << error.message() << "\n";
                 }
@@ -166,6 +177,8 @@ private:
     boost::asio::ssl::stream<tcp::socket> socket_;
     char request_[max_length];
     char reply_[max_length];
+
+    MessageCtx ctx_;
 };
 
 int main(int argc, char *argv[]) {
@@ -182,6 +195,8 @@ int main(int argc, char *argv[]) {
 
         boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv13);
         ctx.load_verify_file("ca.crt");
+        ctx.use_certificate_file("GhostApple.crt", boost::asio::ssl::context::file_format::pem);
+        ctx.use_private_key_file("GhostApple.key", boost::asio::ssl::context::file_format::pem);
 
         client c(io_context, ctx, endpoints);
 

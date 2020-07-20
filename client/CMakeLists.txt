@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8)
 
 project(client_exe)
 
-add_compile_options(-std=c++11)
 add_definitions(-DBOOST_ENDIAN_DEPRECATED_NAMES)
 file(GLOB client_src *.cpp *.cc)
 include_directories(.)
