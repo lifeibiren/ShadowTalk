@@ -84,6 +84,7 @@ int main(int argc, char **args)
 using boost::asio::ip::tcp;
 using std::placeholders::_1;
 using std::placeholders::_2;
+using namespace whisper;
 
 enum { max_length = 1024 };
 

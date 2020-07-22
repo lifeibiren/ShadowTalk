@@ -7,6 +7,7 @@
 
 #include <boost/endian/arithmetic.hpp>
 
+namespace whisper {
 struct Message {
     enum MessageType : uint8_t { NOP, PING, PONG, LIST_PEERS, PEER_LIST, SEND_MSG };
 
@@ -81,3 +82,5 @@ struct MessageCtx {
         return m;
     }
 };
+
+}

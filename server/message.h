@@ -1,5 +1,4 @@
-#ifndef MESSAGE_H
-#define MESSAGE_H
+#pragma  once
 
 #include "boost/shared_ptr.hpp"
 #include "peer.h"
@@ -28,5 +27,3 @@ private:
     boost::shared_ptr<peer> src_peer_, dst_peer_;
 };
 } // namespace shadowtalk
-
-#endif // MESSAGE_H
