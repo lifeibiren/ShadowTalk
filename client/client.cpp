@@ -1,6 +1,19 @@
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <cstdlib>
+#include <cstring>
+#include <functional>
+#include <iostream>
+
+#include "Message.hpp"
+
+using boost::asio::ip::tcp;
+using std::placeholders::_1;
+using std::placeholders::_2;
+using namespace whisper;
+
 #if 0
 #include "sml/service.h"
-#include <iostream>
 
 void handle_received_message(boost::shared_ptr<std::string> msg)
 {
@@ -71,20 +84,6 @@ int main(int argc, char **args)
     return 0;
 }
 #endif
-
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
-#include <cstdlib>
-#include <cstring>
-#include <functional>
-#include <iostream>
-
-#include "Message.hpp"
-
-using boost::asio::ip::tcp;
-using std::placeholders::_1;
-using std::placeholders::_2;
-using namespace whisper;
 
 enum { max_length = 1024 };
 
@@ -157,11 +156,12 @@ private:
     }
 
     void receive_response() {
-       socket_.async_read_some(boost::asio::buffer(reply_, sizeof(reply_)),
+        socket_.async_read_some(boost::asio::buffer(reply_, sizeof(reply_)),
             [this](const boost::system::error_code &error, std::size_t length) {
                 if (!error) {
                     auto ret = ctx_.Feed(std::vector<char>(reply_, reply_ + length));
-                    std::cout<<"Read data of "<<length <<" bytes"<<"\n";
+                    std::cout << "Read data of " << length << " bytes"
+                              << "\n";
                     if (ret) {
                         std::cout << "Reply: ";
                         std::cout.write(ret.value().bytes.data(), ret.value().bytes.size());

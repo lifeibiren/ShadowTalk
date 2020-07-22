@@ -1,13 +1,21 @@
+#include <cstdlib>
+#include <ctime>
+#include <functional>
+#include <iostream>
+#include <list>
+#include <optional>
+#include <string>
+
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <boost/shared_ptr.hpp>
-#include <ctime>
-#include <iostream>
-#include <list>
-#include <string>
 
-#include <optional>
+#include <nlohmann/json.hpp>
+
+#include "Message.hpp"
+#include "peer.h"
 
 #if 0
 #include "message.h"
@@ -41,20 +49,6 @@ int main(int argc, char** args)
     return 0;
 }
 #endif
-
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
-
-#include <boost/endian/arithmetic.hpp>
-
-#include <nlohmann/json.hpp>
-
-#include "Message.hpp"
-#include <cstdlib>
-#include <functional>
-#include <iostream>
-
-#include "peer.h"
 
 using namespace whisper;
 
