@@ -4,6 +4,7 @@
 #include <iostream>
 #include <list>
 #include <optional>
+#include <sstream>
 #include <string>
 
 #include <boost/array.hpp>
@@ -85,26 +86,18 @@ session::~session() {
 const std::list<std::string> &session::GetCommonName() const noexcept {
     return cn_;
 }
+
 void session::do_handshake() {
     auto self(shared_from_this());
     socket_.async_handshake(
         boost::asio::ssl::stream_base::server, [this, self](const boost::system::error_code &error) {
             if (!error) {
-                char subject_name[256];
                 SSL *ssl = socket_.native_handle();
                 X509 *cert = SSL_get_peer_certificate(ssl);
-
-                // X509 *cert = X509_STORE_CTX_get_current_cert(ssl);
                 X509_NAME *nm = X509_get_subject_name(cert);
-
-                X509_NAME_oneline(nm, subject_name, 256);
-
-                std::cout << "Peer: " << subject_name << "\n";
-                // X509 *x509 = SSL_get_peer_certificate(ssl);
 
                 std::cout << "==============\n";
                 int lastpos = -1;
-
                 for (;;) {
                     lastpos = X509_NAME_get_index_by_NID(nm, NID_commonName, lastpos);
                     if (lastpos == -1)
@@ -137,35 +130,46 @@ void session::do_read() {
         boost::asio::buffer(buf_), [this, self](const boost::system::error_code &ec, std::size_t length) {
             std::cout << "Read data of " << length << " bytes" << std::endl;
             if (!ec && length > 0) {
-                auto msg = ctx_.Feed(std::vector<char>(buf_.data(), buf_.data() + length));
-                if (msg) {
-                    Message &m = msg.value();
-                    std::optional<Message> to_send;
+                std::list<Message> msg_list = ctx_.Feed(std::vector<char>(buf_.data(), buf_.data() + length));
+                for (const auto &m : msg_list) {
+                    std::optional<Message> to_write_back;
                     std::cout << "Message type: " << (int)m.type << std::endl;
                     switch (m.type) {
-                        case Message::MessageType::PING:
-                            to_send = Message::CreateMessage(Message::MessageType::PONG);
+                        case MessageType::PING:
+                            to_write_back = Message::CreateMessage(MessageType::PONG);
                             break;
-                        case Message::MessageType::SEND_MSG:
+                        case MessageType::SEND_MSG: {
                             // Transfer to specific peers
+                            auto peer_it = sessions_.find(m.dst);
+                            if (peer_it != sessions_.end()) {
+                                std::cout << "Send Messge to " << m.dst << std::endl;
+                                auto ptr = peer_it->second.lock();
+                                if (ptr) {
+                                    Message to_send = Message::CreateMessage(MessageType::PEER_MSG, m.bytes);
+                                    to_send.src = GetCommonName().front();
+                                    to_send.dst = ptr->GetCommonName().front();
+                                    ptr->WriteMessage(std::move(to_send));
+                                }
+                            }
                             break;
-                        case Message::MessageType::LIST_PEERS: {
+                        }
+                        case MessageType::LIST_PEERS: {
                             // Return peer list
                             nlohmann::json j;
                             j = sessions_;
                             std::string r = j.dump();
-                            to_send = Message::CreateMessage(
-                                Message::MessageType::PEER_LIST, std::vector<char>(r.data(), r.data() + r.size()));
+                            to_write_back = Message::CreateMessage(
+                                MessageType::PEER_LIST, std::vector<char>(r.data(), r.data() + r.size()));
                             break;
                         }
                         default:
-                        case Message::MessageType::NOP:
-                        case Message::MessageType::PONG:
+                        case MessageType::NOP:
+                        case MessageType::PONG:
                             // Ignore
                             break;
                     }
-                    if (to_send) {
-                        WriteMessage(std::move(to_send.value()));
+                    if (to_write_back) {
+                        WriteMessage(std::move(to_write_back.value()));
                     }
                 }
                 do_read();
@@ -189,9 +193,12 @@ void session::do_write() {
     writing_started_ = true;
     Message m = to_write_.front();
     to_write_.pop_front();
-    std::vector<char> bytes = Message::ToBytes(m);
+
+    std::stringstream buf;
+    msgpack::pack(buf, m);
+    std::string str = buf.str();
     boost::asio::async_write(
-        socket_, boost::asio::buffer(bytes), [this, self](const boost::system::error_code &ec, std::size_t /*length*/) {
+        socket_, boost::asio::buffer(str), [this, self](const boost::system::error_code &ec, std::size_t /*length*/) {
             if (!ec) {
                 do_write();
             }

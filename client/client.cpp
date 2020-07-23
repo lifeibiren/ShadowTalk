@@ -4,6 +4,7 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <sstream>
 
 #include "Message.hpp"
 
@@ -138,15 +139,23 @@ private:
     }
 
     void send_request() {
+        self_ = "GhostApple";
         std::cout << "Enter message: ";
         std::cin.getline(request_, max_length);
         size_t request_length = std::strlen(request_);
 
-        auto m = Message::CreateMessage(Message::MessageType::LIST_PEERS);
-        auto buf = Message::ToBytes(m);
+        auto m = Message::CreateMessage(MessageType::LIST_PEERS);
+        std::stringstream buf;
+        msgpack::pack(buf, m);
 
+        m = Message::CreateMessage(MessageType::SEND_MSG, std::string(request_, request_length));
+        m.dst = self_;
+        m.src = self_;
+        msgpack::pack(buf, m);
+
+        std::string str = buf.str();
         boost::asio::async_write(
-            socket_, boost::asio::buffer(buf), [this](const boost::system::error_code &error, std::size_t length) {
+            socket_, boost::asio::buffer(str), [this](const boost::system::error_code &error, std::size_t length) {
                 if (!error) {
                     receive_response();
                 } else {
@@ -159,16 +168,15 @@ private:
         socket_.async_read_some(boost::asio::buffer(reply_, sizeof(reply_)),
             [this](const boost::system::error_code &error, std::size_t length) {
                 if (!error) {
-                    auto ret = ctx_.Feed(std::vector<char>(reply_, reply_ + length));
+                    std::list<Message> msg_list = ctx_.Feed(std::vector<char>(reply_, reply_ + length));
                     std::cout << "Read data of " << length << " bytes"
                               << "\n";
-                    if (ret) {
+                    for (const auto &m : msg_list) {
                         std::cout << "Reply: ";
-                        std::cout.write(ret.value().bytes.data(), ret.value().bytes.size());
+                        std::cout.write(m.bytes.data(), m.bytes.size());
                         std::cout << "\n";
-                    } else {
-                        receive_response();
                     }
+                    receive_response();
                 } else {
                     std::cout << "Read failed: " << error.message() << "\n";
                 }
@@ -179,6 +187,7 @@ private:
     char request_[max_length];
     char reply_[max_length];
 
+    std::string self_;
     MessageCtx ctx_;
 };
 
