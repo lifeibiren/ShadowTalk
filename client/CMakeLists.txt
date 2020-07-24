@@ -8,4 +8,4 @@ include_directories(.)
 add_subdirectory(sml)
 
 add_executable(client_bin ${client_src})
-target_link_libraries(client_bin sml libboost_system.a libboost_thread.a dl pthread cryptopp yaml-cpp ssl crypto)
+target_link_libraries(client_bin sml libboost_coroutine.a libboost_context.a libboost_system.a libboost_thread.a dl pthread cryptopp yaml-cpp ssl crypto)

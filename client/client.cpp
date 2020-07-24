@@ -1,5 +1,10 @@
+
+#include <boost/range.hpp>
+
 #include <boost/asio.hpp>
+#include <boost/asio/spawn.hpp>
 #include <boost/asio/ssl.hpp>
+
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -90,23 +95,37 @@ enum { max_length = 1024 };
 
 class client {
 public:
-    client(boost::asio::io_context &io_context, boost::asio::ssl::context &context,
+    client(boost::asio::io_context &io_context,
+        boost::asio::ssl::context &context,
         const tcp::resolver::results_type &endpoints)
-        : socket_(io_context, context) {
+        : socket_(io_context, context)
+        , remote_(endpoints) {
         socket_.set_verify_mode(boost::asio::ssl::verify_peer);
-        socket_.set_verify_callback(std::bind(&client::verify_certificate, this, _1, _2));
+        socket_.set_verify_callback(
+            std::bind(&client::verify_certificate, this, _1, _2));
 
-        connect(endpoints);
+        boost::asio::spawn(std::bind(&client::routine, this, _1));
+        // connect(endpoints);
     }
 
 private:
-    bool verify_certificate(bool preverified, boost::asio::ssl::verify_context &ctx) {
-        // The verify callback can be used to check whether the certificate that is
-        // being presented is valid for the peer. For example, RFC 2818 describes
-        // the steps involved in doing this for HTTPS. Consult the OpenSSL
-        // documentation for more details. Note that the callback is called once
-        // for each certificate in the certificate chain, starting from the root
-        // certificate authority.
+    void routine(boost::asio::yield_context yield) {
+        connect(yield);
+        handshake(yield);
+        send_request(yield);
+        for (;;) {
+            receive_response(yield);
+        }
+    }
+
+    bool verify_certificate(
+        bool preverified, boost::asio::ssl::verify_context &ctx) {
+        // The verify callback can be used to check whether the certificate that
+        // is being presented is valid for the peer. For example, RFC 2818
+        // describes the steps involved in doing this for HTTPS. Consult the
+        // OpenSSL documentation for more details. Note that the callback is
+        // called once for each certificate in the certificate chain, starting
+        // from the root certificate authority.
 
         // In this example we will simply print the certificate's subject name.
         char subject_name[256];
@@ -117,28 +136,15 @@ private:
         return preverified;
     }
 
-    void connect(const tcp::resolver::results_type &endpoints) {
-        boost::asio::async_connect(socket_.lowest_layer(), endpoints,
-            [this](const boost::system::error_code &error, const tcp::endpoint & /*endpoint*/) {
-                if (!error) {
-                    handshake();
-                } else {
-                    std::cout << "Connect failed: " << error.message() << "\n";
-                }
-            });
+    void connect(boost::asio::yield_context yield) {
+        boost::asio::async_connect(socket_.lowest_layer(), remote_, yield);
     }
 
-    void handshake() {
-        socket_.async_handshake(boost::asio::ssl::stream_base::client, [this](const boost::system::error_code &error) {
-            if (!error) {
-                send_request();
-            } else {
-                std::cout << "Handshake failed: " << error.message() << "\n";
-            }
-        });
+    void handshake(boost::asio::yield_context yield) {
+        socket_.async_handshake(boost::asio::ssl::stream_base::client, yield);
     }
 
-    void send_request() {
+    void send_request(boost::asio::yield_context yield) {
         self_ = "GhostApple";
         std::cout << "Enter message: ";
         std::cin.getline(request_, max_length);
@@ -148,41 +154,32 @@ private:
         std::stringstream buf;
         msgpack::pack(buf, m);
 
-        m = Message::CreateMessage(MessageType::SEND_MSG, std::string(request_, request_length));
+        m = Message::CreateMessage(
+            MessageType::SEND_MSG, std::string(request_, request_length));
         m.dst = self_;
         m.src = self_;
         msgpack::pack(buf, m);
 
         std::string str = buf.str();
-        boost::asio::async_write(
-            socket_, boost::asio::buffer(str), [this](const boost::system::error_code &error, std::size_t length) {
-                if (!error) {
-                    receive_response();
-                } else {
-                    std::cout << "Write failed: " << error.message() << "\n";
-                }
-            });
+        boost::asio::async_write(socket_, boost::asio::buffer(str), yield);
     }
 
-    void receive_response() {
-        socket_.async_read_some(boost::asio::buffer(reply_, sizeof(reply_)),
-            [this](const boost::system::error_code &error, std::size_t length) {
-                if (!error) {
-                    std::list<Message> msg_list = ctx_.Feed(std::vector<char>(reply_, reply_ + length));
-                    std::cout << "Read data of " << length << " bytes"
-                              << "\n";
-                    for (const auto &m : msg_list) {
-                        std::cout << "Reply: ";
-                        std::cout.write(m.bytes.data(), m.bytes.size());
-                        std::cout << "\n";
-                    }
-                    receive_response();
-                } else {
-                    std::cout << "Read failed: " << error.message() << "\n";
-                }
-            });
+    void receive_response(boost::asio::yield_context yield) {
+        std::size_t length = socket_.async_read_some(
+            boost::asio::buffer(reply_, sizeof(reply_)), yield);
+
+        std::list<Message> msg_list
+            = ctx_.Feed(std::vector<char>(reply_, reply_ + length));
+        std::cout << "Read data of " << length << " bytes"
+                  << "\n";
+        for (const auto &m : msg_list) {
+            std::cout << "Reply: ";
+            std::cout.write(m.bytes.data(), m.bytes.size());
+            std::cout << "\n";
+        }
     }
 
+    boost::asio::ip::tcp::resolver::results_type remote_;
     boost::asio::ssl::stream<tcp::socket> socket_;
     char request_[max_length];
     char reply_[max_length];
@@ -205,8 +202,10 @@ int main(int argc, char *argv[]) {
 
         boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv13);
         ctx.load_verify_file("ca.crt");
-        ctx.use_certificate_file("GhostApple.crt", boost::asio::ssl::context::file_format::pem);
-        ctx.use_private_key_file("GhostApple.key", boost::asio::ssl::context::file_format::pem);
+        ctx.use_certificate_file(
+            "GhostApple.crt", boost::asio::ssl::context::file_format::pem);
+        ctx.use_private_key_file(
+            "GhostApple.key", boost::asio::ssl::context::file_format::pem);
 
         client c(io_context, ctx, endpoints);
 
