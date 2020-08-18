@@ -1,35 +1,27 @@
 #include "peer.h"
 
-namespace whisper
-{
-peer::peer()
-{
+namespace whisper {
+peer::peer() {
     last_beat_ = std::time(NULL);
 }
-peer::peer(const std::string& address, unsigned int port)
-    : peer()
-{
+peer::peer(const std::string &address, unsigned int port)
+    : peer() {
     address_ = address;
     port_ = port;
 }
-const std::string& peer::address() const
-{
+const std::string &peer::address() const {
     return address_;
 }
-unsigned int peer::port() const
-{
+unsigned int peer::port() const {
     return port_;
 }
-void peer::update()
-{
+void peer::update() {
     last_beat_ = std::time(NULL);
 }
-bool peer::dead() const
-{
+bool peer::dead() const {
     return std::time(NULL) - last_beat_ > 30;
 }
-std::string peer::to_string() const
-{
+std::string peer::to_string() const {
     return address_ + ":" + std::to_string(port_);
 }
 // bool peer::operator=(const peer &r_peer)
@@ -40,45 +32,31 @@ std::string peer::to_string() const
 //    pub_key_ = r_peer.pub_key_;
 //    last_beat_ = ;
 //}
-bool peer::operator==(const peer& r_peer) const
-{
-    if (address_.compare(r_peer.address_) == 0 && port_ == r_peer.port_)
-    {
+bool peer::operator==(const peer &r_peer) const {
+    if (address_.compare(r_peer.address_) == 0 && port_ == r_peer.port_) {
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
-bool peer::operator!=(const peer& r_peer) const
-{
+bool peer::operator!=(const peer &r_peer) const {
     return !(*this == r_peer);
 }
-bool peer::operator<(const peer& r_peer) const
-{
-    if (*this == r_peer)
-    {
+bool peer::operator<(const peer &r_peer) const {
+    if (*this == r_peer) {
         return false;
     }
     int comp_result = address_.compare(r_peer.address_);
-    if (comp_result < 0 || (comp_result == 0 && port_ < r_peer.port_))
-    {
+    if (comp_result < 0 || (comp_result == 0 && port_ < r_peer.port_)) {
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
-bool peer::operator>(const peer& r_peer) const
-{
-    if (*this == r_peer)
-    {
+bool peer::operator>(const peer &r_peer) const {
+    if (*this == r_peer) {
         return false;
-    }
-    else
-    {
+    } else {
         return !(*this < r_peer);
     }
 }

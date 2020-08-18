@@ -112,7 +112,7 @@ void session::do_handshake() {
             if (!error) {
                 SSL *ssl = socket_.native_handle();
                 cn_ = SSLGetPeerCommonNames(ssl);
-                for (const auto &cn: cn_) {
+                for (const auto &cn : cn_) {
                     std::cout << "CN=" << cn << std::endl;
                 }
                 addr_ = socket_.next_layer()

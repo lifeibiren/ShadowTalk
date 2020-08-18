@@ -47,7 +47,8 @@ using PeerSessions = std::map<std::string, std::weak_ptr<session>>;
 
 class session : public std::enable_shared_from_this<session> {
 public:
-    session(std::map<std::string, std::weak_ptr<session>> &sessions, boost::asio::ip::tcp::socket socket,
+    session(std::map<std::string, std::weak_ptr<session>> &sessions,
+        boost::asio::ip::tcp::socket socket,
         boost::asio::ssl::context &context);
 
     void start();
