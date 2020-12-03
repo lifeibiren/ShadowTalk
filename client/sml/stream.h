@@ -4,10 +4,8 @@
 #include "config.h"
 #include "datagram.h"
 
-namespace sml
-{
-class stream
-{
+namespace sml {
+class stream {
 public:
     typedef function<void(shared_ptr<datagram> data)> send_callback_type;
     typedef datagram::id_type id_type;
@@ -15,7 +13,7 @@ public:
     stream(asio::io_context &io_context, peer &a_peer, id_type id);
     void feed(shared_ptr<datagram> packet);
     void send(const std::string &data);
-//    void send_one_piece();
+    //    void send_one_piece();
 
 private:
     void send_one_datagram();
@@ -41,9 +39,10 @@ private:
     datagram::offset_type send_offset_, recv_offset_;
     datagram::length_type send_length_, recv_length_;
 
-//    std::list<std::string> send_data_list_;
+    //    std::list<std::string> send_data_list_;
 
-    typedef std::map<datagram::offset_type, shared_ptr<datagram>> datagram_map_type;
+    typedef std::map<datagram::offset_type, shared_ptr<datagram>>
+        datagram_map_type;
     datagram_map_type send_datagram_queue_, recv_datagram_queue_;
 };
 }

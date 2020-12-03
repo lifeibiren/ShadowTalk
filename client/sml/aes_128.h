@@ -8,11 +8,9 @@
 #include <cryptopp/osrng.h>
 #include <cryptopp/secblock.h>
 
-namespace sml
-{
+namespace sml {
 class encryptor;
-class aes_128 : public encryptor
-{
+class aes_128 : public encryptor {
 public:
     aes_128(sptr_string &key);
     void set_key(sptr_string key);

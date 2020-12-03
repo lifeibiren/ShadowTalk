@@ -9,26 +9,21 @@
  * while it treats the endian of all methods' parameters as what it should be
  * depeneding on the architecture.
  */
-namespace sml
-{
-class byte_string
-{
+namespace sml {
+class byte_string {
 public:
-    enum class whence_type : std::uint8_t
-    {
+    enum class whence_type : std::uint8_t {
         seek_set = 0,
         seek_cur = 1,
         seek_end = 2
     };
-    struct seek_out_of_range : exception_base
-    {};
+    struct seek_out_of_range : exception_base {};
 
     byte_string()
         : buf_(nullptr)
         , data_len_(0)
         , buf_size_(0)
-        , offset_(0)
-    {}
+        , offset_(0) {}
     byte_string(int init_buf_size);
     byte_string(std::string &val);
     byte_string(const byte_string &val);
@@ -48,9 +43,11 @@ public:
     uint64_t append(void *buf, int n);
     uint64_t append(const byte_string &val);
 
-    template <typename T> uint64_t append(T val)
-    {
-        boost::endian::endian_buffer<boost::endian::order::big, T, sizeof(T) * 8> buffer(val);
+    template <typename T>
+    uint64_t append(T val) {
+        boost::endian::endian_buffer<boost::endian::order::big, T,
+            sizeof(T) * 8>
+            buffer(val);
         BOOST_STATIC_ASSERT(sizeof(buffer) == sizeof(T));
         return append(&buffer, sizeof(T));
     }
@@ -67,19 +64,17 @@ public:
     bool operator>=(const byte_string &val) const;
     byte_string &operator+(const byte_string &val);
 
-    template <typename T> byte_string &operator<<(const T &val)
-    {
-        if (write(&val, sizeof(T)) != sizeof(T))
-        {
+    template <typename T>
+    byte_string &operator<<(const T &val) {
+        if (write(&val, sizeof(T)) != sizeof(T)) {
             throw io_error();
         }
         return *this;
     }
 
-    template <typename T> byte_string &operator>>(T &val)
-    {
-        if (read(&val, sizeof(T)) != sizeof(T))
-        {
+    template <typename T>
+    byte_string &operator>>(T &val) {
+        if (read(&val, sizeof(T)) != sizeof(T)) {
             throw io_error();
         }
         return *this;

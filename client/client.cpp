@@ -41,13 +41,13 @@ private:
     void routine(boost::asio::yield_context yield) {
         connect(yield);
         handshake(yield);
-        boost::asio::spawn([this](boost::asio::yield_context yield){
+        boost::asio::spawn([this](boost::asio::yield_context yield) {
             receive_response(yield);
         });
         for (;;) {
             bool would_sleep = false;
             {
-                std::lock_guard g(m_);       
+                std::lock_guard g(m_);
                 if (to_write_.empty()) {
                     would_sleep = true;
                 }
@@ -137,7 +137,6 @@ private:
     std::string self_;
     MessageCtx ctx_;
 
-
     std::mutex m_;
     std::list<Message> recv_list_;
     std::list<Message> to_write_;
@@ -157,7 +156,9 @@ void NetworkService::ListPeers(
 
 bool NetworkService::Send(Peer *p, std::string data) {}
 
-std::vector<std::string> NetworkService::receive() {}
+// std::vector<std::string> NetworkService::receive() {
+
+// }
 
 int main(int argc, char *argv[]) {
     try {

@@ -4,10 +4,8 @@
 #include "service.h"
 
 #include "encrypt_layer.h"
-namespace sml
-{
-class aes_256
-{
+namespace sml {
+class aes_256 {
 public:
     aes_256();
 };

@@ -3,10 +3,8 @@
 
 #include "config.h"
 
-namespace sml
-{
-class datagram
-{
+namespace sml {
+class datagram {
 public:
     datagram();
     datagram(const datagram &val);
@@ -19,8 +17,7 @@ public:
     void encrypt_payload(encrypt_layer &el);
     void decrypt_payload(encrypt_layer &el);
 
-    enum class msg_type : uint8_t
-    {
+    enum class msg_type : uint8_t {
         keep_alive,
         ack,
         hello,

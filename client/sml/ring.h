@@ -3,15 +3,13 @@
 
 #include "config.h"
 
-namespace sml
-{
+namespace sml {
 class message;
 /**
  * @brief
  * thread safe ring buffer
  */
-class ring
-{
+class ring {
 
 public:
     ring();

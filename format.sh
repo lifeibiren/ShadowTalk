@@ -1,2 +1,3 @@
 #!/bin/bash
-clang-format -i `find . -regex '.*\.\(h\|\(cpp\)\|c\)'`
+dir=(client server common)
+clang-format -i `find $dir -regex '.*\.\(h\|\(cpp\)\|c\)'`

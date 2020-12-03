@@ -6,21 +6,22 @@
 #include "configuration.h"
 #include "peer.h"
 
-namespace sml
-{
-class udp_layer
-{
+namespace sml {
+class udp_layer {
 public:
-    typedef function<void (shared_ptr<std::string> msg, const address &addr)> handler_type;
-    typedef function<bool (shared_ptr<std::string> msg, const address &addr)> filter_type;
-    struct peer_hash_func : std::unary_function<address, std::size_t>
-    {
+    typedef function<void(shared_ptr<std::string> msg, const address &addr)>
+        handler_type;
+    typedef function<bool(shared_ptr<std::string> msg, const address &addr)>
+        filter_type;
+    struct peer_hash_func : std::unary_function<address, std::size_t> {
         size_t operator()(const address &addr) const { return addr.hash(); }
     };
-    typedef unordered_map<address, shared_ptr<peer>, peer_hash_func> peer_map_type;
+    typedef unordered_map<address, shared_ptr<peer>, peer_hash_func>
+        peer_map_type;
 
     udp_layer(service &a_service);
-    void send_to(shared_ptr<std::string> msg, const address &addr, handler_type handler);
+    void send_to(
+        shared_ptr<std::string> msg, const address &addr, handler_type handler);
     void register_filter(filter_type handler, const address &addr_hits);
     void register_default_filter(filter_type handler);
 
@@ -32,13 +33,14 @@ public:
 
 private:
     void start_receive();
-    void handle_receive(const boost::system::error_code &error_message, std::size_t bytes_transferred);
-    void handle_send(const boost::system::error_code &error_message, shared_ptr<std::string> message,
-        const address &addr, handler_type handler);
+    void handle_receive(const boost::system::error_code &error_message,
+        std::size_t bytes_transferred);
+    void handle_send(const boost::system::error_code &error_message,
+        shared_ptr<std::string> message, const address &addr,
+        handler_type handler);
 
     service &service_;
-    struct hash_func : std::unary_function<address, std::size_t>
-    {
+    struct hash_func : std::unary_function<address, std::size_t> {
         size_t operator()(const address &x) const { return x.hash(); }
     };
 

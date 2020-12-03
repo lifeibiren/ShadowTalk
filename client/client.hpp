@@ -38,8 +38,7 @@ public:
         ctx.use_private_key_file(
             "GhostApple.key", boost::asio::ssl::context::file_format::pem);
 #endif
-
-        t_ = std::thread(std::bind(this, &NetworkService::routine));
+        t_ = std::thread(std::bind(&NetworkService::routine, this));
     }
 
 protected:
@@ -49,5 +48,6 @@ protected:
 
     bool Send(Peer *p, std::string data);
 
-    std::vector<std::string> receive();
+    void SetRecvCallback(
+        std::function<void(Peer *, const std::string &data)> handler);
 };

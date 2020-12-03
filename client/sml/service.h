@@ -34,10 +34,8 @@
 #include "peer.h"
 #include "udp_layer.h"
 
-namespace sml
-{
-class service
-{
+namespace sml {
+class service {
 public:
     service(asio::io_context &io_context, const configuration &conf);
 
@@ -49,10 +47,12 @@ public:
     configuration &conf();
 
     shared_ptr<std::vector<address>> peer_list() const;
+
 private:
     void msg_handler();
     void query_server(const boost::system::error_code &ec);
-    bool server_datagram_filter(shared_ptr<std::string> msg, const address &addr);
+    bool server_datagram_filter(
+        shared_ptr<std::string> msg, const address &addr);
 
     configuration conf_;
     asio::io_context &io_context_;

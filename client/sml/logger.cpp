@@ -1,6 +1,5 @@
 #include "logger.h"
 
-namespace sml
-{
+namespace sml {
 logger::logger() {}
 }

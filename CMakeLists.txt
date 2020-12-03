@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(Whisper)
 
-add_compile_options(-std=c++17)
+add_compile_options(-std=c++17 -g3)
 add_definitions(-DBOOST_ENDIAN_DEPRECATED_NAMES)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -19,10 +19,11 @@ endif()
 
 #set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined -g3")
 #set(CMAKE_C_FLAGS_DEBUG "-fsanitize=address,leak,undefined -g3")
-set(CMAKE_CXX_FLAGS "-std=c++17")
-set(CMAKE_C_FLAGS_DEUBG "-g3")
-set(CMAKE_CXX_FLAGS_DEBUG "-g3")
+set(CMAKE_CXX_FLAGS "")
+set(CMAKE_C_FLAGS_DEUBG "-fno-inline -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS_DEBUG "-fno-inline -fno-omit-frame-pointer")
 include_directories(common)
 # add_subdirectory(common)
 add_subdirectory(server)
 add_subdirectory(client)
+add_subdirectory(ws)

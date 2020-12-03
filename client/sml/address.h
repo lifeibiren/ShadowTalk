@@ -3,10 +3,8 @@
 
 #include "config.h"
 
-namespace sml
-{
-class address
-{
+namespace sml {
+class address {
 public:
     address();
     address(const std::string &ip_addr, uint16_t port);
@@ -23,6 +21,7 @@ public:
 
     size_t hash() const;
     std::string to_string() const;
+
 private:
     std::string ip_addr_;
     uint16_t port_;
@@ -31,19 +30,19 @@ private:
 
 #include <yaml-cpp/yaml.h>
 namespace YAML {
-template<>
+template <>
 struct convert<sml::address> {
-  static Node encode(const sml::address& rhs) {
-    return Node(rhs.to_string());
-  }
-
-  static bool decode(const Node& node, sml::address& rhs) {
-    if(!node.IsScalar()) {
-      return false;
+    static Node encode(const sml::address &rhs) {
+        return Node(rhs.to_string());
     }
-    rhs = sml::address(node.as<std::string>());
-    return true;
-  }
+
+    static bool decode(const Node &node, sml::address &rhs) {
+        if (!node.IsScalar()) {
+            return false;
+        }
+        rhs = sml::address(node.as<std::string>());
+        return true;
+    }
 };
 }
 #endif // ADDRESS_H

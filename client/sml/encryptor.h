@@ -3,10 +3,8 @@
 
 #include "service.h"
 
-namespace sml
-{
-class encryptor
-{
+namespace sml {
+class encryptor {
 public:
     virtual void set_key(sptr_string key) = 0;
     virtual std::string encrypt(const std::string &data) = 0;

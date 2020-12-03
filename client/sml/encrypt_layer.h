@@ -3,16 +3,11 @@
 
 #include "config.h"
 
-namespace sml
-{
+namespace sml {
 class encryptor;
-class encrypt_layer
-{
+class encrypt_layer {
 public:
-    enum class algorithm : int
-    {
-        AES_128
-    };
+    enum class algorithm : int { AES_128 };
     encrypt_layer(algorithm algo, sptr_string key);
     std::string encrypt(const std::string &data);
     std::string decrypt(const std::string &data);

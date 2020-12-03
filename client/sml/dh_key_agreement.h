@@ -11,10 +11,8 @@
 #include <cryptopp/osrng.h>
 #include <cryptopp/secblock.h>
 
-namespace sml
-{
-inline const std::string hex_str_to_bytes(const std::string &hex)
-{
+namespace sml {
+inline const std::string hex_str_to_bytes(const std::string &hex) {
     CryptoPP::Integer priv(hex.c_str());
     std::unique_ptr<byte[]> priv_blk(new byte[priv.ByteCount()]);
     priv.Encode(priv_blk.get(), priv.ByteCount());
@@ -22,16 +20,18 @@ inline const std::string hex_str_to_bytes(const std::string &hex)
     return std::string((const char *)priv_blk.get(), priv.ByteCount());
 }
 
-class dh_key_agreement
-{
+class dh_key_agreement {
 public:
     dh_key_agreement();
 
     void generate_static_key_pairs();
     void generate_ephemeral_key_pairs();
-    void set_static_key_pairs(const std::string &static_priv_key_bytes, const std::string &static_pub_key_bytes);
-    void set_ephemeral_key_pairs(const std::string &eph_priv_key_bytes, const std::string &eph_pub_key_bytes);
-    void set_peer_pub_key_pairs(const std::string &static_pub_key_bytes, const std::string &eph_pub_key_bytes);
+    void set_static_key_pairs(const std::string &static_priv_key_bytes,
+        const std::string &static_pub_key_bytes);
+    void set_ephemeral_key_pairs(const std::string &eph_priv_key_bytes,
+        const std::string &eph_pub_key_bytes);
+    void set_peer_pub_key_pairs(const std::string &static_pub_key_bytes,
+        const std::string &eph_pub_key_bytes);
     void generate_shared_key();
     std::string generate_content_encryption_key_and_cma();
     void feed_peer_content_encryption_key_and_cma(const std::string &cek);
@@ -46,9 +46,11 @@ private:
     CryptoPP::Integer p, q, g;
     std::unique_ptr<CryptoPP::DH> dh;
     std::unique_ptr<CryptoPP::DH2> dh2;
-    std::unique_ptr<CryptoPP::SecByteBlock> spriv, spub, epriv, epub, peer_spub, peer_epub;
+    std::unique_ptr<CryptoPP::SecByteBlock> spriv, spub, epriv, epub, peer_spub,
+        peer_epub;
     std::unique_ptr<CryptoPP::SecByteBlock> shared; // KEK
-    std::unique_ptr<CryptoPP::SecByteBlock> cek_; // content encryption key(CEK for AES)
+    std::unique_ptr<CryptoPP::SecByteBlock>
+        cek_; // content encryption key(CEK for AES)
     std::unique_ptr<CryptoPP::SecByteBlock> cek_cmac_; // CMAC for CEK
 };
 }
