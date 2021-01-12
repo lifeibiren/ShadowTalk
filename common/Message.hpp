@@ -11,7 +11,52 @@
 
 namespace whisper {
 
-enum MessageType : uint8_t { INVALID, NOP, PING, PONG, LIST_PEERS, PEER_LIST, SEND_MSG, PEER_MSG };
+enum MessageType : uint8_t {
+    INVALID,
+    NOP,
+
+    // Messages used to keep alive
+    PING, // S -> C
+    PONG, // C -> S
+
+    // Messages used to query online peers
+    LIST_PEERS, // C -> S
+    PEER_LIST, // S -> C
+
+    // Messages used to send message to other peers
+    SEND_MSG, // C -> S
+    PEER_MSG, // S -> C
+
+    // Messages used to initiate point-to-point connections
+    //    WANT TO CONNECT
+    // A -----------------> Server
+    //    CONNECT KEY
+    // A <----------------> Server
+    //    CONNECTED BY
+    // B <----------------- Server
+    //
+    // Start new websocket with KEY
+    // A -----------------> Server
+    // B -----------------> Server
+    WANT_TO_CONNECT, // C -> S
+    CONNECT_KEY, // S -> C
+    CONNECTED_BY, // S -> C
+};
+
+struct PeerAddr {
+    std::string ip_;
+    std::uint16_t port_;
+
+    PeerAddr() noexcept
+        : port_(0) {}
+    PeerAddr(std::string ip, std::uint16_t port)
+        : ip_(ip)
+        , port_(port) {}
+
+    MSGPACK_DEFINE(ip_, port_);
+};
+
+using PeerList = std::vector<PeerAddr>;
 
 struct Message {
     MessageType type;
@@ -19,12 +64,17 @@ struct Message {
     std::string src;
     std::vector<char> bytes;
 
-    MSGPACK_DEFINE(type, src, dst, bytes);
+    PeerList peer_list;
+
+    PeerAddr to_connect;
+
+    MSGPACK_DEFINE(type, src, dst, bytes, peer_list, to_connect);
 
     Message() noexcept
         : type(INVALID) {}
 
-    static Message CreateMessage(MessageType type, std::vector<char> data = {}) {
+    static Message CreateMessage(
+        MessageType type, std::vector<char> data = {}) {
         Message r;
         r.type = type;
         r.bytes = data;

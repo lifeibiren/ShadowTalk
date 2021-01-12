@@ -129,12 +129,9 @@ public:
                     return fail(ec, "handle message");
                 }
             }
-
-            // Echo the message back
-            // ws_.text(ws_.got_text());
-            // ws_.async_write(buffer.data(), yield[ec]);
-            // if (ec)
-            // return fail(ec, "write");
+            std::cout << "Peer disconnected "
+                      << ws_.next_layer().socket().remote_endpoint()
+                      << std::endl;
         }
     }
     beast::error_code handleMessage(
@@ -142,17 +139,22 @@ public:
         whisper::Message reply;
         switch (m.type) {
             case whisper::MessageType::NOP:
-            case whisper::MessageType::PING:
-                reply = handlePING(m);
+                break;
+            case whisper::MessageType::PONG:
+                reply = handlePONG(m);
                 break;
             case whisper::MessageType::LIST_PEERS:
-                reply = handleLISTPEERS(m);
+                reply = handleLIST_PEERS(m);
                 break;
-            case whisper::MessageType::INVALID:
+            case whisper::MessageType::SEND_MSG:
+                reply = handleSEND_MSG(m);
+                break;
+            case whisper::MessageType::WANT_TO_CONNECT:
+                reply = handleWANT_TO_CONNECT(m);
+                break;
             default:
                 break;
         }
-
         beast::error_code ec;
         std::stringstream buf;
         msgpack::pack(buf, reply);
@@ -161,13 +163,27 @@ public:
         return ec;
     }
 
-    whisper::Message handlePING(const whisper::Message &m) {
+    whisper::Message handlePONG(const whisper::Message &m) {
         return whisper::Message::CreateMessage(whisper::MessageType::PONG);
     }
 
-    whisper::Message handleLISTPEERS(const whisper::Message &m) {
+    whisper::Message handleLIST_PEERS(const whisper::Message &msg) {
+        std::lock_guard g(m);
+        whisper::Message reply;
+        reply.type = whisper::MessageType::PEER_LIST;
+        for (const auto &[end, _] : session_table) {
+            reply.peer_list.emplace_back(end.address().to_string(), end.port());
+        }
         return whisper::Message::CreateMessage(whisper::MessageType::PONG);
     }
+
+    whisper::Message handleCONNECT(const whisper::Message &msg) {
+        std::lock_guard g(m);
+    }
+
+    whisper::Message handleSEND_MSG(const whisper::Message &msg) {}
+
+    whisper::Message handleWANT_TO_CONNECT(const whisper::Message &msg) {}
 };
 
 std::unordered_map<tcp::endpoint, std::weak_ptr<Session>>

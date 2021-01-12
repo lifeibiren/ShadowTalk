@@ -9,14 +9,15 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <qapplication.h>
 #include <sstream>
 
+#include "Client.hpp"
 #include "Message.hpp"
-#include "client.hpp"
+
+#include "MainWindow.h"
 
 using boost::asio::ip::tcp;
-using std::placeholders::_1;
-using std::placeholders::_2;
 using namespace whisper;
 
 enum { max_length = 1024 };
@@ -30,10 +31,11 @@ public:
         , remote_(endpoints)
         , timer_(io_context) {
         socket_.set_verify_mode(boost::asio::ssl::verify_peer);
-        socket_.set_verify_callback(
-            std::bind(&client::verify_certificate, this, _1, _2));
+        socket_.set_verify_callback(std::bind(&client::verify_certificate, this,
+            std::placeholders::_1, std::placeholders::_2));
 
-        boost::asio::spawn(std::bind(&client::routine, this, _1));
+        boost::asio::spawn(
+            std::bind(&client::routine, this, std::placeholders::_1));
         // connect(endpoints);
     }
 
@@ -154,37 +156,42 @@ void NetworkService::routine() {
 void NetworkService::ListPeers(
     std::function<void(const std::vector<Peer *> &)> handler) {}
 
-bool NetworkService::Send(Peer *p, std::string data) {}
+bool NetworkService::Send(Peer *p, std::string data) {
+    return false;
+}
 
 // std::vector<std::string> NetworkService::receive() {
 
 // }
 
 int main(int argc, char *argv[]) {
-    try {
-        if (argc != 3) {
-            std::cerr << "Usage: client <host> <port>\n";
-            return 1;
-        }
+    // try {
+    //     if (argc != 3) {
+    //         std::cerr << "Usage: client <host> <port>\n";
+    //         return 1;
+    //     }
 
-        boost::asio::io_context io_context;
+    //     boost::asio::io_context io_context;
 
-        tcp::resolver resolver(io_context);
-        auto endpoints = resolver.resolve(argv[1], argv[2]);
+    //     tcp::resolver resolver(io_context);
+    //     auto endpoints = resolver.resolve(argv[1], argv[2]);
 
-        boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv13);
-        ctx.load_verify_file("ca.crt");
-        ctx.use_certificate_file(
-            "GhostApple.crt", boost::asio::ssl::context::file_format::pem);
-        ctx.use_private_key_file(
-            "GhostApple.key", boost::asio::ssl::context::file_format::pem);
+    //     boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv13);
+    //     ctx.load_verify_file("ca.crt");
+    //     ctx.use_certificate_file(
+    //         "GhostApple.crt", boost::asio::ssl::context::file_format::pem);
+    //     ctx.use_private_key_file(
+    //         "GhostApple.key", boost::asio::ssl::context::file_format::pem);
 
-        client c(io_context, ctx, endpoints);
+    //     client c(io_context, ctx, endpoints);
 
-        io_context.run();
-    } catch (std::exception &e) {
-        std::cerr << "Exception: " << e.what() << "\n";
-    }
+    //     io_context.run();
+    // } catch (std::exception &e) {
+    //     std::cerr << "Exception: " << e.what() << "\n";
+    // }
 
-    return 0;
+    QApplication app(argc, argv);
+    MainWindow w;
+    w.show();
+    return app.exec();
 }
