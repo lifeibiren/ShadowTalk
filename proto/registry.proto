@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package registry;
+
+service Registry {
+
+rpc Login(Credential) returns (AccessToken);
+
+rpc Ping(Nothing) returns (Time);
+
+rpc ListPeers(Nothing) returns (PeerList);
+
+rpc SwitchMessages(stream Message) returns (stream Message);
+
+rpc WaitForPeerConnection(Nothing) returns (stream Peer);
+
+rpc StartPeerConnection(stream Bytes) returns (stream Bytes);
+
+}
+
+message Nothing {}
+
+message Credential {
+    string name = 1;
+}
+
+message AccessToken {
+    string token = 1;
+}
+
+message Time {
+    uint64 utc = 1;
+}
+
+message PeerId {
+    string id = 1;
+};
+
+message Peer {
+    PeerId id = 1;
+}
+
+message PeerList {
+    repeated Peer peers = 1;
+}
+
+message Message {
+    PeerId peer = 1;
+    enum MessageType {
+        TEXT = 0;
+    }
+    MessageType type = 3;
+    bytes content = 4;
+}
+
+message Bytes {
+    bytes data = 1;
+};

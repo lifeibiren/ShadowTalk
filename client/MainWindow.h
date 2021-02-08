@@ -24,6 +24,8 @@ private slots:
 
 private:
     void loadConf(const QJsonDocument &doc);
+    void start(QString const &host);
+    void stop();
 
 private:
     std::unique_ptr<Ui::MainWindow> ui_;

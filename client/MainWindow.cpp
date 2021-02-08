@@ -57,7 +57,12 @@ void MainWindow::loadConf(const QJsonDocument &doc) {
     conf_.try_emplace("Server Port", "443");
     conf_.try_emplace("Your Name", "Mr. Nobody");
     conf_.try_emplace("Certificates", "");
+    conf_.try_emplace("Private Key", "");
 }
+
+void MainWindow::start(QString const &host) {}
+
+void MainWindow::stop() {}
 
 void MainWindow::saveConf() {
     conf_ = preferences_dialog_->GetConf();
