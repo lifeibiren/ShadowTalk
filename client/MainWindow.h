@@ -10,6 +10,7 @@ class MainWindow;
 }
 
 class PreferencesDialog;
+class GRPCThreads;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -21,6 +22,7 @@ public:
 private slots:
     void showPreferences();
     void saveConf();
+    void onLogin(QString const &token);
 
 private:
     void loadConf(const QJsonDocument &doc);
@@ -33,6 +35,8 @@ private:
     QFile *config_file_;
 
     std::map<QString, QString> conf_;
+
+    std::unique_ptr<GRPCThreads> thread_;
 };
 
 #endif // MAINWINDOW_H

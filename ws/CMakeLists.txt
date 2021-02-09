@@ -5,4 +5,5 @@ add_executable(ws ${ws_src})
 target_link_libraries(
     ws
     ${Boost_LIBRARIES}
+    asan
 )

@@ -1,14 +1,16 @@
 #include <chrono>
-#include <cstddef>
-#include <ctime>
 #include <deque>
 #include <iostream>
 #include <memory>
-#include <openssl/sha.h>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <thread>
 
+#include <cstddef>
+#include <ctime>
+
+#include <openssl/sha.h>
 // #include <grpc/grpc.h>
 // #include <grpcpp/security/server_credentials.h>
 // #include <grpcpp/server.h>
@@ -56,6 +58,7 @@ std::string GetAccessToken(::grpc::ServerContext *context) {
     return clientId;
 }
 
+#if 0
 class RegistryImpl final : public Registry::Service {
 public:
     explicit RegistryImpl() {}
@@ -147,6 +150,7 @@ private:
     std::map<std::string, std::shared_ptr<PeerInfo>> peer_id_map_;
     std::map<std::string, std::shared_ptr<PeerInfo>> peer_name_map_;
 };
+#endif
 
 class HandleCall;
 std::map<std::string, std::shared_ptr<PeerInfo>> peer_id_map_;
@@ -177,8 +181,6 @@ public:
 
     virtual ~HandleCall() {}
 
-    void Prepare() { RequestData(); }
-
     void Proceed() override {
         switch (status_) {
             case CREATE:
@@ -186,7 +188,7 @@ public:
                 RequestData();
                 break;
             case RECEIVED_REQUEST:
-                CreateInstance(service_, q_)->Prepare();
+                CreateInstance(service_, q_)->Proceed();
                 if (HandleRequest()) {
                     status_ = FINALLIZE;
                 } else {
@@ -236,11 +238,12 @@ public:
         std::string name = request.name();
         unsigned char buf[SHA_DIGEST_LENGTH];
         SHA1((unsigned char *)name.data(), name.size(), buf);
-        std::string to_string;
+        std::stringstream ss;
+        ss << std::hex;
         for (std::size_t i = 0; i < sizeof(buf); i++) {
-            to_string += (i >> 4) + '0';
-            to_string += (i & 0xf) + '0';
+            ss << (unsigned int)buf[i];
         }
+        std::string to_string = ss.str();
         response.set_token(to_string);
         auto peer_info(std::make_shared<PeerInfo>(name, GetUTC()));
         peer_id_map_.emplace(to_string, peer_info);
@@ -477,7 +480,7 @@ void RunServer() {
     std::cout << "Server listening on " << server_address << std::endl;
     // server->Wait();
 
-    (new HandleLogin(&service, cq.get()))->Prepare();
+    (new HandleLogin(&service, cq.get()))->Proceed();
 
     void *tag; // uniquely identifies a request.
     bool ok;

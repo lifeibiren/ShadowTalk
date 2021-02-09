@@ -20,11 +20,11 @@ endif()
 find_package(Protobuf REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 
-#set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined -g3")
-#set(CMAKE_C_FLAGS_DEBUG "-fsanitize=address,leak,undefined -g3")
+set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,leak,undefined -g3")
+set(CMAKE_C_FLAGS_DEBUG "-fsanitize=address,leak,undefined -g3")
 set(CMAKE_CXX_FLAGS "")
-set(CMAKE_C_FLAGS_DEUBG "-fno-inline -fno-omit-frame-pointer")
-set(CMAKE_CXX_FLAGS_DEBUG "-fno-inline -fno-omit-frame-pointer")
+# set(CMAKE_C_FLAGS_DEUBG "-fno-inline -fno-omit-frame-pointer ")
+# set(CMAKE_CXX_FLAGS_DEBUG "-fno-inline -fno-omit-frame-pointer")
 
 
 set(_PROTOBUF_LIBPROTOBUF protobuf)

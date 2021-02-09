@@ -29,6 +29,7 @@ target_link_libraries(
     yaml-cpp
     ssl
     crypto
+    hw_grpc_proto
 )
 
 # add_subdirectory(sml)

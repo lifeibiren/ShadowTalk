@@ -19,6 +19,9 @@ public:
     void accept();
     std::map<QString, QString> const &GetConf() const noexcept;
 
+public slots:
+    void delete_dialog() { delete this; }
+
 private:
     Ui::PreferencesDialog *ui_;
     std::map<QString, QString> conf_;

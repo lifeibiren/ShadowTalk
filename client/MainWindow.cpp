@@ -1,13 +1,15 @@
-#include "MainWindow.h"
-#include "PreferencesDialog.h"
-#include "ui_MainWindow.h"
-
 #include <QJsonDocument>
 #include <QJsonObject>
 
 #include <QtGlobal>
 #include <qjsonobject.h>
 #include <qobject.h>
+
+#include "ui_MainWindow.h"
+
+#include "GRPCClient.hpp"
+#include "MainWindow.h"
+#include "PreferencesDialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -33,6 +35,16 @@ MainWindow::MainWindow(QWidget *parent)
     preferences_dialog_ = new PreferencesDialog(conf_, this);
     QObject::connect(preferences_dialog_, &PreferencesDialog::accepted, this,
         &MainWindow::saveConf);
+    // QObject::connect(preferences_dialog_, &PreferencesDialog::accepted,
+    // preferences_dialog_, &PreferencesDialog::delete_dialog);
+
+    this->thread_.reset(new GRPCThreads);
+    this->thread_->start();
+    assert(this->thread_->isRunning());
+
+    connect(this->thread_.get(), &GRPCThreads::LoginCompleted, this,
+        &MainWindow::onLogin);
+    this->thread_->Login("hello");
 }
 
 MainWindow::~MainWindow() {}
@@ -75,4 +87,8 @@ void MainWindow::saveConf() {
     QByteArray bytes = doc.toJson();
     config_file_->seek(0);
     config_file_->write(bytes);
+}
+
+void MainWindow::onLogin(QString const &token) {
+    qDebug() << token;
 }
