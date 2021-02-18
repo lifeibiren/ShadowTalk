@@ -7,6 +7,25 @@
 #include "registry.pb.h"
 #include <grpcpp/grpcpp.h>
 
+struct PeerId {
+    PeerId() = default;
+    ~PeerId() = default;
+    PeerId(const PeerId &) = default;
+    PeerId &operator=(const PeerId &) = default;
+    QString id;
+};
+struct PeerList {
+    PeerList() = default;
+    ~PeerList() = default;
+    PeerList(const PeerList &) = default;
+    PeerList &operator=(const PeerList &) = default;
+
+    QVector<PeerId> peers;
+};
+
+Q_DECLARE_METATYPE(PeerId);
+Q_DECLARE_METATYPE(PeerList);
+
 class GRPCThreads : public QThread {
     Q_OBJECT
 public:
@@ -19,10 +38,12 @@ public:
 
 public slots:
     void Login(QString const &cred);
+    void ListPeers(QString const &cred);
     // void Ping();
 
 signals:
-    void LoginCompleted(QString const &id);
+    void OnLogin(QString const &id);
+    void OnListPeers(PeerList const &list);
     // void PingCompleted()
 
 protected:

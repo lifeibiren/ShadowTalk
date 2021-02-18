@@ -53,104 +53,17 @@ std::uint64_t GetUTC() {
 }
 
 std::string GetAccessToken(::grpc::ServerContext *context) {
-    auto it = context->client_metadata().find("Access-Token");
-    auto clientId = std::string(it->second.begin(), it->second.end());
-    return clientId;
+    auto it = context->client_metadata().find("access-token");
+    if (it == context->client_metadata().end()) {
+        std::cerr << "Unable to get access-token from metadata\n";
+        return "";
+    }
+    std::string token = std::string(it->second.data(), it->second.size());
+    std::cout << "token " << token << std::endl;
+    // auto clientId = std::string(it->second.begin(), it->second.end());
+    // return clientId;
+    return token;
 }
-
-#if 0
-class RegistryImpl final : public Registry::Service {
-public:
-    explicit RegistryImpl() {}
-
-    ::grpc::Status Login(::grpc::ServerContext *context,
-        const ::registry::Credential *request,
-        ::registry::AccessToken *response) {
-        std::string name = request->name();
-        unsigned char buf[SHA_DIGEST_LENGTH];
-        SHA1((unsigned char *)name.data(), name.size(), buf);
-        std::string to_string;
-        for (std::size_t i = 0; i < sizeof(buf); i++) {
-            to_string += (i >> 4) + '0';
-            to_string += (i & 0xf) + '0';
-        }
-        response->set_token(to_string);
-        auto peer_info(std::make_shared<PeerInfo>(name, GetUTC()));
-
-        peer_id_map_.emplace(to_string, peer_info);
-        peer_name_map_.emplace(name, peer_info);
-        return ::grpc::Status::OK;
-    }
-
-    ::grpc::Status Ping(::grpc::ServerContext *context,
-        const ::registry::Nothing *request, ::registry::Time *response) {
-        auto peer(GetPeerInfo(context));
-        if (!peer) {
-            return ::grpc::Status::CANCELLED;
-        }
-        auto now(GetUTC());
-        peer->last_active = now;
-        response->set_utc(now);
-        return ::grpc::Status::OK;
-    }
-
-    ::grpc::Status ListPeers(::grpc::ServerContext *context,
-        const ::registry::Nothing *request, ::registry::PeerList *response) {
-        auto peer(GetPeerInfo(context));
-        if (!peer) {
-            return ::grpc::Status::CANCELLED;
-        }
-        for (auto const &[_, p] : peer_id_map_) {
-            auto new_one(response->add_peers());
-            new_one->mutable_id()->set_id(p->name);
-        }
-        return ::grpc::Status::OK;
-    }
-
-    ::grpc::Status SwitchMessages(::grpc::ServerContext *context,
-        ::grpc::ServerReaderWriter<::registry::Message, ::registry::Message>
-            *stream) {
-        auto peer(GetPeerInfo(context));
-        if (!peer) {
-            return ::grpc::Status::CANCELLED;
-        }
-        while (true) {
-            ::registry::Message msg;
-            if (!stream->Read(&msg)) {
-                break;
-            }
-            auto it = peer_name_map_.find(msg.peer().id());
-            if (it == peer_name_map_.end()) {
-                return ::grpc::Status::CANCELLED;
-            }
-        }
-
-        return ::grpc::Status::OK;
-    }
-
-    ::grpc::Status WaitForPeerConnection(::grpc::ServerContext *context,
-        const ::registry::Nothing *request,
-        ::grpc::ServerWriter<::registry::Peer> *writer) {}
-
-    ::grpc::Status StartPeerConnection(::grpc::ServerContext *context,
-        ::grpc::ServerReaderWriter<::registry::Bytes, ::registry::Bytes>
-            *stream) {}
-
-    PeerInfo *GetPeerInfo(::grpc::ServerContext *context) {
-        auto it = peer_id_map_.find(GetAccessToken(context));
-        if (it == peer_id_map_.end()) {
-            return nullptr;
-        }
-        return it->second.get();
-    }
-
-private:
-    std::mutex mu_;
-
-    std::map<std::string, std::shared_ptr<PeerInfo>> peer_id_map_;
-    std::map<std::string, std::shared_ptr<PeerInfo>> peer_name_map_;
-};
-#endif
 
 class HandleCall;
 std::map<std::string, std::shared_ptr<PeerInfo>> peer_id_map_;
@@ -304,9 +217,9 @@ public:
     ::grpc::ServerAsyncResponseWriter<::registry::Time> response_writer;
 };
 
-class ListPeers : public HandleCall {
+class HandleListPeers : public HandleCall {
 public:
-    ListPeers(
+    HandleListPeers(
         registry::Registry::AsyncService *service, ServerCompletionQueue *q)
         : HandleCall(service, q)
         , response_writer(&ctx_) {}
@@ -317,9 +230,11 @@ public:
     }
 
     bool HandleRequest() override {
+        std::cout << "Received ListPeers\n";
         auto peer(GetPeerInfo(&ctx_));
         if (!peer) {
             response_writer.FinishWithError(::grpc::Status::CANCELLED, this);
+            std::cout << "Unable to find peer\n";
             return true;
         }
         for (auto const &[_, p] : peer_id_map_) {
@@ -332,7 +247,7 @@ public:
 
     HandleCall *CreateInstance(registry::Registry::AsyncService *service,
         ServerCompletionQueue *q) override {
-        return new ListPeers(service, q);
+        return new HandleListPeers(service, q);
     }
 
     // Context for the rpc, allowing to tweak aspects of it such as the use
@@ -469,7 +384,6 @@ public:
 
 void RunServer() {
     std::string server_address("0.0.0.0:50051");
-    // RegistryImpl service;
     registry::Registry::AsyncService service;
 
     ServerBuilder builder;
@@ -478,9 +392,9 @@ void RunServer() {
     std::unique_ptr<ServerCompletionQueue> cq(builder.AddCompletionQueue());
     std::unique_ptr<Server> server(builder.BuildAndStart());
     std::cout << "Server listening on " << server_address << std::endl;
-    // server->Wait();
 
     (new HandleLogin(&service, cq.get()))->Proceed();
+    (new HandleListPeers(&service, cq.get()))->Proceed();
 
     void *tag; // uniquely identifies a request.
     bool ok;

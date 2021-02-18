@@ -3,16 +3,22 @@
 
 class RPCCall {
 public:
+    RPCCall(::registry::Registry::Stub *stub, ::grpc::CompletionQueue *cq)
+        : stub_(stub)
+        , cq_(cq) {}
     virtual ~RPCCall() {}
     virtual void Proceed() = 0;
+
+    ::registry::Registry::Stub *stub_;
+    ::grpc::CompletionQueue *cq_;
+    ::grpc::Status status_;
 };
 
 class LoginCall : public RPCCall {
 public:
     LoginCall(::registry::Registry::Stub *stub, ::grpc::CompletionQueue *cq,
         QString const &id, std::function<void(QString const &)> callback)
-        : stub_(stub)
-        , cq_(cq)
+        : RPCCall(stub, cq)
         , cb_(callback)
         , state_(INIT) {
         request_.set_name(id.toStdString());
@@ -40,18 +46,64 @@ public:
     }
 
     enum { INIT, FIN } state_;
-
-    ::registry::Registry::Stub *stub_;
-    ::grpc::CompletionQueue *cq_;
     ::registry::Credential request_;
     ::registry::AccessToken response_;
-    ::grpc::Status status_;
 
     ::grpc::ClientContext context_;
     std::unique_ptr<::grpc::ClientAsyncResponseReader<::registry::AccessToken>>
         reader_;
 
     std::function<void(QString const &)> cb_;
+};
+
+class ListPeerCall : public RPCCall {
+public:
+    ListPeerCall(::registry::Registry::Stub *stub, ::grpc::CompletionQueue *cq,
+        QString const &token, std::function<void(PeerList const &)> callback)
+        : RPCCall(stub, cq)
+        , token_(token.toStdString())
+        , cb_(callback)
+        , state_(INIT) {
+        context_.AddMetadata("access-token", token_);
+        Proceed();
+    }
+
+    void Proceed() {
+        switch (state_) {
+            case INIT:
+                reader_ = stub_->AsyncListPeers(&context_, request_, cq_);
+                reader_->Finish(&response_, &status_, this);
+                state_ = FIN;
+                break;
+            case FIN:
+                if (status_.ok()) {
+                    PeerList r;
+                    for (auto const &p : response_.peers()) {
+                        PeerId id;
+                        id.id = QString::fromStdString(p.id().id());
+                        r.peers.push_back(id);
+                    }
+                    cb_(r);
+                } else {
+                    qDebug("ListPeer failed");
+                }
+                delete this;
+                break;
+            default:
+                break;
+        }
+    }
+
+    enum { INIT, FIN } state_;
+    std::string token_;
+    ::registry::Nothing request_;
+    ::registry::PeerList response_;
+
+    ::grpc::ClientContext context_;
+    std::unique_ptr<::grpc::ClientAsyncResponseReader<::registry::PeerList>>
+        reader_;
+
+    std::function<void(PeerList const &)> cb_;
 };
 
 void GRPCThreads::run() {
@@ -72,5 +124,10 @@ void GRPCThreads::run() {
 
 void GRPCThreads::Login(QString const &cred) {
     new LoginCall(stub_.get(), &cq_, cred,
-        [this](QString const &token) { emit LoginCompleted(token); });
+        [this](QString const &token) { emit OnLogin(token); });
+}
+
+void GRPCThreads::ListPeers(QString const &token) {
+    new ListPeerCall(stub_.get(), &cq_, token,
+        [this](PeerList const &list) { emit OnListPeers(list); });
 }

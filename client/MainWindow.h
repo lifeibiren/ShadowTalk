@@ -5,12 +5,13 @@
 #include <QMainWindow>
 #include <QString>
 
+#include "GRPCClient.hpp"
+
 namespace Ui {
 class MainWindow;
 }
 
 class PreferencesDialog;
-class GRPCThreads;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -23,6 +24,7 @@ private slots:
     void showPreferences();
     void saveConf();
     void onLogin(QString const &token);
+    void onListPeers(PeerList const &list);
 
 private:
     void loadConf(const QJsonDocument &doc);

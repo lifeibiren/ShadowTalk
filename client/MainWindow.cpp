@@ -42,8 +42,11 @@ MainWindow::MainWindow(QWidget *parent)
     this->thread_->start();
     assert(this->thread_->isRunning());
 
-    connect(this->thread_.get(), &GRPCThreads::LoginCompleted, this,
-        &MainWindow::onLogin);
+    int id = qRegisterMetaType<PeerList>();
+    connect(
+        this->thread_.get(), &GRPCThreads::OnLogin, this, &MainWindow::onLogin);
+    connect(this->thread_.get(), &GRPCThreads::OnListPeers, this,
+        &MainWindow::onListPeers);
     this->thread_->Login("hello");
 }
 
@@ -91,4 +94,14 @@ void MainWindow::saveConf() {
 
 void MainWindow::onLogin(QString const &token) {
     qDebug() << token;
+    this->thread_->ListPeers(token);
+    qDebug() << "Called ListPeers\n";
+}
+
+void MainWindow::onListPeers(PeerList const &list) {
+    qDebug() << "ListPeers:\n";
+    for (auto const p : list.peers) {
+        qDebug() << p.id << "\n";
+    }
+    qDebug() << "\n";
 }
