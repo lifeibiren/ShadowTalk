@@ -81,7 +81,7 @@ class HandleCallBase {
 public:
     virtual ~HandleCallBase() {}
 
-    virtual void Proceed() = 0;
+    virtual void Proceed(bool ok) = 0;
 };
 
 class HandleCall : public HandleCallBase {
@@ -94,14 +94,19 @@ public:
 
     virtual ~HandleCall() {}
 
-    void Proceed() override {
+    void Proceed(bool ok) override {
+        if (!ok) {
+            CreateInstance(service_, q_)->Proceed(true);
+            delete this;
+            return;
+        }
         switch (status_) {
             case CREATE:
                 status_ = RECEIVED_REQUEST;
                 RequestData();
                 break;
             case RECEIVED_REQUEST:
-                CreateInstance(service_, q_)->Proceed();
+                CreateInstance(service_, q_)->Proceed(true);
                 if (HandleRequest()) {
                     status_ = FINALLIZE;
                 } else {
@@ -144,11 +149,13 @@ public:
         , response_writer(&ctx_) {}
 
     void RequestData() override {
+        std::cout << "WAIT LOGIN" << std::endl;
         service_->RequestLogin(&ctx_, &request, &response_writer, q_, q_, this);
     }
 
     bool HandleRequest() override {
         std::string name = request.name();
+        std::cout << "LOGIN: " << name << std::endl;
         unsigned char buf[SHA_DIGEST_LENGTH];
         SHA1((unsigned char *)name.data(), name.size(), buf);
         std::stringstream ss;
@@ -280,35 +287,31 @@ public:
         : ptr_(ptr)
         , status_(IDLE) {}
 
-    void Proceed() override {
-        if (ptr_->ctx_.IsCancelled()) {
+    void Proceed(bool ok) override {
+        if (!ok /*|| ptr_->ctx_.IsCancelled()*/) {
             ptr_->peer->writer_ = nullptr;
             delete this;
             return;
         }
-        switch (status_) {
-            case IDLE:
-                break;
-            case RUNNING:
-                to_write_.pop_front();
-                if (!to_write_.empty()) {
-                    ptr_->stream.Write(to_write_.front(), this);
-                } else {
-                    status_ = IDLE;
-                }
-            default:
-                break;
+        std::cout << "Sent message to " << ptr_->peer->name << "\n";
+        to_write_.pop_front();
+        if (!to_write_.empty()) {
+            ptr_->stream.Write(to_write_.front(), this);
+        } else {
+            std::cout << "No more message to send to " << ptr_->peer->name
+                      << ", idle\n";
+            status_ = IDLE;
         }
     }
 
     void Write(::registry::Message msg) {
+        std::cout << "Send message to " << ptr_->peer->name << "\n";
         to_write_.emplace_back(msg);
         switch (status_) {
             case IDLE:
                 ptr_->stream.Write(to_write_.front(), this);
                 status_ = RUNNING;
                 break;
-            case RUNNING:
             default:
                 break;
         }
@@ -321,21 +324,11 @@ public:
 
 class HandleSwitchMessages : public HandleCall {
 public:
-    class WriteBack : public HandleCallBase {
-    public:
-        WriteBack(HandleSwitchMessages *p)
-            : p_(p) {}
-        void Proceed() {}
-
-        void WriteMessage(::registry::Message *msg) {}
-
-        HandleSwitchMessages *p_;
-    };
-
     HandleSwitchMessages(
         registry::Registry::AsyncService *service, ServerCompletionQueue *q)
         : HandleCall(service, q)
-        , ctx_(new MessageSwitchContext) {}
+        , ctx_(new MessageSwitchContext)
+        , peer_(nullptr) {}
 
     void RequestData() override {
         service_->RequestSwitchMessages(
@@ -343,31 +336,38 @@ public:
     }
 
     bool HandleRequest() override {
-        if (!peer) {
-            peer = GetPeerInfo(&ctx_->ctx_);
-            if (!peer) {
+        if (!peer_) {
+            peer_ = GetPeerInfo(&ctx_->ctx_);
+            if (!peer_) {
                 ctx_->stream.Finish(::grpc::Status::CANCELLED, this);
                 return true;
             }
-            ctx_->peer = peer;
+            ctx_->peer = peer_;
             ctx_->peer->writer_ = new PeerMessageWriter(ctx_);
             // prepare read
-            ctx_->stream.Read(&msg, this);
+            ctx_->stream.Read(&msg_, this);
+            std::cout << "Start reading message from " << ctx_->peer->name
+                      << "\n";
             return false;
         }
-        if (ctx_->ctx_.IsCancelled()) {
-            return true;
-        }
+        // if (ctx_->ctx_.IsCancelled()) {
+        //     std::cout << "Cancelled handling message from " <<
+        //     ctx_->peer->name
+        //               << "\n";
+        //     return true;
+        // }
+        std::cout << "Received message " << msg_.content().size() << " from "
+                  << msg_.peer().id() << " : " << msg_.content() << "\n";
         // handle message
-        auto dest(msg.peer().id());
+        auto dest(msg_.peer().id());
         auto it = peer_name_map_.find(dest);
         if (it != peer_name_map_.end()) {
             if (it->second->writer_) {
-                *(msg.mutable_peer()->mutable_id()) = peer->name;
-                it->second->writer_->Write(msg);
+                *(msg_.mutable_peer()->mutable_id()) = peer_->name;
+                it->second->writer_->Write(msg_);
             }
         }
-        ctx_->stream.Read(&msg, this);
+        ctx_->stream.Read(&msg_, this);
         return false;
     }
 
@@ -377,13 +377,12 @@ public:
     }
 
     std::shared_ptr<MessageSwitchContext> ctx_;
-    ::registry::Message msg;
-
-    PeerInfo *peer;
+    ::registry::Message msg_;
+    PeerInfo *peer_;
 };
 
 void RunServer() {
-    std::string server_address("0.0.0.0:50051");
+    std::string server_address("[::]:50051");
     registry::Registry::AsyncService service;
 
     ServerBuilder builder;
@@ -393,8 +392,9 @@ void RunServer() {
     std::unique_ptr<Server> server(builder.BuildAndStart());
     std::cout << "Server listening on " << server_address << std::endl;
 
-    (new HandleLogin(&service, cq.get()))->Proceed();
-    (new HandleListPeers(&service, cq.get()))->Proceed();
+    (new HandleLogin(&service, cq.get()))->Proceed(true);
+    (new HandleListPeers(&service, cq.get()))->Proceed(true);
+    (new HandleSwitchMessages(&service, cq.get()))->Proceed(true);
 
     void *tag; // uniquely identifies a request.
     bool ok;
@@ -405,8 +405,7 @@ void RunServer() {
         // The return value of Next should always be checked. This return value
         // tells us whether there is any kind of event or cq_ is shutting down.
         GPR_ASSERT(cq->Next(&tag, &ok));
-        GPR_ASSERT(ok);
-        static_cast<HandleCallBase *>(tag)->Proceed();
+        static_cast<HandleCallBase *>(tag)->Proceed(ok);
     }
 }
 

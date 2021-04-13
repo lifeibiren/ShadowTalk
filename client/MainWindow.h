@@ -23,6 +23,8 @@ public:
 private slots:
     void showPreferences();
     void saveConf();
+    void sendMessage();
+
     void onLogin(QString const &token);
     void onListPeers(PeerList const &list);
 

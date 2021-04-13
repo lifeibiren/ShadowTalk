@@ -49,8 +49,8 @@ message Message {
     enum MessageType {
         TEXT = 0;
     }
-    MessageType type = 3;
-    bytes content = 4;
+    MessageType type = 2;
+    bytes content = 3;
 }
 
 message Bytes {

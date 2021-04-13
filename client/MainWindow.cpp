@@ -1,6 +1,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include <QStringListModel>
+
 #include <QtGlobal>
 #include <qjsonobject.h>
 #include <qobject.h>
@@ -38,16 +40,18 @@ MainWindow::MainWindow(QWidget *parent)
     // QObject::connect(preferences_dialog_, &PreferencesDialog::accepted,
     // preferences_dialog_, &PreferencesDialog::delete_dialog);
 
-    this->thread_.reset(new GRPCThreads);
+    this->thread_.reset(new GRPCThreads("127.0.0.1:50051",
+        "Hello_" + QString::fromStdString(std::to_string(time(NULL)))));
     this->thread_->start();
     assert(this->thread_->isRunning());
 
-    int id = qRegisterMetaType<PeerList>();
     connect(
         this->thread_.get(), &GRPCThreads::OnLogin, this, &MainWindow::onLogin);
     connect(this->thread_.get(), &GRPCThreads::OnListPeers, this,
         &MainWindow::onListPeers);
-    this->thread_->Login("hello");
+
+    connect(
+        ui_->sendButton, &QPushButton::pressed, this, &MainWindow::sendMessage);
 }
 
 MainWindow::~MainWindow() {}
@@ -94,14 +98,35 @@ void MainWindow::saveConf() {
 
 void MainWindow::onLogin(QString const &token) {
     qDebug() << token;
-    this->thread_->ListPeers(token);
-    qDebug() << "Called ListPeers\n";
+    this->thread_->ListPeers();
+    qDebug() << "Called ListPeers";
+}
+
+void MainWindow::sendMessage() {
+    QString msg = ui_->textEdit->document()->toPlainText();
+    QByteArray bytes = msg.toUtf8();
+    qDebug("Send Message: %s", msg.toStdString().c_str());
+    int row = ui_->peerList->currentIndex().row();
+    qDebug("Current selected row %d", row);
+    QAbstractItemModel *model = ui_->peerList->model();
+    QStringListModel *qsl_model = dynamic_cast<QStringListModel *>(model);
+    assert(qsl_model);
+    Message m;
+    m.peer.id = qsl_model->stringList().at(row);
+    m.type = Message::MessageType::TEXT;
+    m.bytes.resize(bytes.size());
+    memcpy(m.bytes.data(), bytes.data(), bytes.size());
+    thread_->SendMessage(m);
 }
 
 void MainWindow::onListPeers(PeerList const &list) {
-    qDebug() << "ListPeers:\n";
+    QStringList l;
+    qDebug() << "ListPeers:";
     for (auto const p : list.peers) {
-        qDebug() << p.id << "\n";
+        qDebug() << p.id;
+        l.push_back(p.id);
     }
-    qDebug() << "\n";
+    qDebug() << "";
+    QAbstractItemModel *model = new QStringListModel(l);
+    ui_->peerList->setModel(model);
 }

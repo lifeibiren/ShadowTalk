@@ -1,10 +1,4 @@
 
-#include <boost/range.hpp>
-
-#include <boost/asio.hpp>
-#include <boost/asio/spawn.hpp>
-#include <boost/asio/ssl.hpp>
-
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -16,6 +10,14 @@
 #include "Message.hpp"
 
 #include "MainWindow.h"
+
+#if 0
+
+#include <boost/range.hpp>
+
+#include <boost/asio.hpp>
+#include <boost/asio/spawn.hpp>
+#include <boost/asio/ssl.hpp>
 
 using boost::asio::ip::tcp;
 using namespace whisper;
@@ -160,6 +162,7 @@ bool NetworkService::Send(Peer *p, std::string data) {
     return false;
 }
 
+#endif
 // std::vector<std::string> NetworkService::receive() {
 
 // }

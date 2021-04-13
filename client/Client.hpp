@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 
+#if 0
 class client;
 
 class Peer {
@@ -50,3 +51,5 @@ protected:
     void SetRecvCallback(
         std::function<void(Peer *, const std::string &data)> handler);
 };
+
+#endif
